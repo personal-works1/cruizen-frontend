@@ -1,0 +1,290 @@
+.shopPage {
+  max-width: 680px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+  background: var(--bg);
+}
+
+/* ── Banner ── */
+.shopBanner {
+  position: relative;
+  height: 180px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-mid));
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+}
+
+.shopBannerImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shopBannerPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-mid) 100%);
+}
+
+.shopBackBtn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--accent);
+}
+
+/* ── Identity ── */
+.shopIdentity {
+  padding: 0 1rem 1rem;
+  margin-top: -45px;
+  position: relative;
+  background: var(--bg-card);
+}
+
+.shopAvatarWrap {
+  margin-bottom: 0.5rem;
+  border: 3px solid var(--bg-card);
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--bg-card);
+}
+
+.shopInfo { padding: 0.5rem 0; }
+
+.shopNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shopName {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.shopCategory {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.shopRating {
+  font-size: 13px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+/* ── Stats ── */
+.shopStats {
+  display: flex;
+  gap: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.shopStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.shopStat strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.shopStat span {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ── Action buttons ── */
+.shopActions {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.shopFollowBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.shopFollowBtn.following {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+
+.shopMessageBtn {
+  background: none;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 20px;
+  padding: 8px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.shopMessageBtn:hover { background: var(--accent-light); }
+
+.shopSocialLinks {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Tabs ── */
+.shopTabs {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  margin: 0.5rem 1rem 0;
+  background: var(--bg-card);
+}
+
+.shopTab {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.shopTab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Products Grid ── */
+.shopProductsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg);
+}
+
+.shopProductCard {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.2s;
+  background: var(--bg-card);
+}
+
+.shopProductCard:hover { transform: translateY(-2px); }
+
+.shopProductImg {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.shopProductImgPlaceholder {
+  width: 100%;
+  height: 160px;
+  background: var(--accent-light);
+}
+
+.shopProductInfo {
+  padding: 0.6rem 0.75rem;
+}
+
+.shopProductName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.shopProductPrice {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+.shopProductFakePrice {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  margin: 0;
+}
+
+.shopProductUnits {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 2px 0 0;
+}
+
+/* ── Reviews ── */
+.shopReviews {
+  padding: 1rem;
+  background: var(--bg);
+}
+
+.shopReviewItem {
+  background: var(--accent-light);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border);
+}
+
+.shopReviewTop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.shopReviewStars {
+  margin-left: auto;
+  display: flex;
+}
+
+.shopReviewText {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.shopReviewDate {
+  font-size: 11px;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,541 @@
+/* ── Grid Layout ── */
+.searchGridContainer {
+  min-height: 100vh;
+  padding: 1em;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1.5fr 2fr 1.5fr;
+  gap: 1em;
+  background-color: var(--bg);
+}
+
+.InputContainer {
+  grid-column: span 3;
+}
+
+/* ── Search Bar ── */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-bar-row {
+  display: flex;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+}
+
+.main-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.main-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.category-toggle {
+  color: var(--accent);
+  background: var(--accent-light);
+  border: none;
+  border-left: 1.5px solid var(--border);
+  padding: 0 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.category-toggle:hover {
+  background: var(--border);
+}
+
+.search-go {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.search-go:hover { background: var(--accent-mid); }
+.search-go:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Clear Button ── */
+.clear-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.clear-btn:hover { color: var(--accent); }
+
+/* ── Floating Filter Panel ── */
+.category-floating-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 260px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(97, 2, 123, 0.15);
+  padding: 1.2em;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1.5px solid var(--border);
+}
+
+.filter-item label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.filter-item select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  background: var(--bg);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.apply-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.apply-btn:hover { background: var(--accent-mid); }
+
+/* ── Dropdown ── */
+.searchDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(97, 2, 123, 0.15);
+  z-index: 1000;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1.5px solid var(--border);
+}
+
+.dropdownSection {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--accent-light);
+}
+
+.dropdownSection:last-child { border-bottom: none; }
+
+.dropdownLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 16px 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dropdownItem:hover { background: var(--accent-light); }
+
+.dropdownHashIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dropdownItemText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dropdownItemText strong {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.dropdownItemText span {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.dropdownEmpty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* ── Search Results ── */
+.searchResults {
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.resultSection {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  padding: 1em;
+}
+
+.resultHeading {
+  color: var(--accent);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.8em;
+  border-bottom: 1.5px solid var(--accent-light);
+  padding-bottom: 0.5em;
+}
+
+/* ── User Result Card ── */
+.userResultCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--accent-light);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.userResultCard:hover { background: var(--border); }
+
+.userResultInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userResultInfo strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.userResultInfo span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.userResultBio {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.userResultFollowers {
+  color: var(--accent) !important;
+  font-size: 11px !important;
+}
+
+.searchFollowBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.searchFollowBtn:hover { background: var(--accent-mid); }
+
+.searchFollowBtn.following {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1.5px solid var(--border);
+}
+
+/* ── Lucky Pick ── */
+.luckyPickContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8em;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  padding: 1em;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.3em;
+  align-self: flex-start;
+}
+
+.carouselWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  width: 100%;
+}
+
+.carouselBtn {
+  background: var(--accent-light);
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent);
+  transition: background 0.2s;
+}
+
+.carouselBtn:hover { background: var(--border); }
+
+.seeMoreLink {
+  color: var(--accent);
+  font-size: 0.85rem;
+  text-decoration: none;
+  align-self: flex-end;
+  font-weight: 600;
+}
+
+.seeMoreLink:hover { text-decoration: underline; }
+
+/* ── Cart Card ── */
+.cart-Card {
+  flex: 1;
+  background: var(--accent-light);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.5em;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  min-width: 0;
+}
+
+.cartOwner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  gap: 6px;
+}
+
+.cartOwner p {
+  color: var(--text-primary);
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.UserandRatings {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.3em;
+}
+
+.goodsImage {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  background: var(--border);
+  margin: 0.5em 0;
+}
+
+.goodsInfo {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.about { font-weight: 600; color: var(--text-primary); font-size: 0.9rem; }
+.Price { font-size: 1rem; font-weight: 700; color: var(--accent); }
+.fakePrice { text-decoration: line-through; color: var(--text-secondary); font-size: 0.82rem; }
+.UnitLeft { font-size: 0.75rem; color: var(--text-secondary); }
+
+/* ── Videos Section ── */
+.videosSection {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  padding: 1em;
+}
+
+.videosGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8em;
+}
+
+.videoCard {
+  background: var(--accent-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 0.9rem;
+  min-height: 120px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.videoOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(97, 2, 123, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.videoCard:hover .videoOverlay { opacity: 1; }
+
+/* ── Video Preview Modal ── */
+.videoPreviewModal {
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 16px;
+  width: 100%;
+  max-width: 560px;
+}
+
+/* ── Modal Overlay ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+/* ── Trending ── */
+.trending-Section {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  overflow-y: auto;
+}
+
+.trendCard {
+  background: var(--accent-light);
+  border-radius: 8px;
+  padding: 0.8em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  transition: background 0.2s;
+}
+
+.trendCard:hover { background: var(--border); }
+
+.trendTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.trendFooter {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .searchGridContainer {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    padding: 0.5em;
+  }
+
+  .InputContainer { grid-column: span 1; }
+
+  .category-floating-panel {
+    width: 90%;
+    position: fixed;
+    top: 80px;
+    left: 5%;
+  }
+
+  .searchResults { grid-column: span 1; }
+}

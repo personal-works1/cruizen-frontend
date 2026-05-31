@@ -1,0 +1,21 @@
+:root {
+  --bg: #f5e6ff;
+  --bg-card: #ffffff;
+  --border: #e2a9f1;
+  --text-primary: #2d002d;
+  --text-secondary: #888;
+  --accent: #61027b;
+  --accent-light: #f5e6ff;
+  --accent-mid: #e2a9f1;
+}
+
+[data-theme="dark"] {
+  --bg: #1a0020;
+  --bg-card: #2d0035;
+  --border: #4a0060;
+  --text-primary: #ffffff;      /* ← was #f5e6ff, now pure white */
+  --text-secondary: #d4a0e8;    /* ← was #cb6ce6, now brighter */
+  --accent: #cb6ce6;
+  --accent-light: #2d0035;
+  --accent-mid: #4a0060;
+}

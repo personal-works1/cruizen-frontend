@@ -1,0 +1,534 @@
+/* ── Messages Page ── */
+.messagesPage {
+  background: var(--bg, #f5e6ff);
+  min-height: 100vh;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.messagesHeader {
+  padding: 1rem 1.2rem;
+  border-bottom: 1.5px solid var(--border, #e2a9f1);
+  background: var(--bg-card, #fff);
+  position: sticky;
+  top: 10vh;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+
+}
+.newMessageBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #61027b;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.newMessageBtn:hover { background: #f5e6ff; }
+
+/* ── search bar ── */
+.messagesSearchBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-light);
+  border-radius: 20px;
+  padding: 8px 14px;
+  margin: 0.5rem 1rem 1rem;
+}
+
+.messagesSearchInput {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary, #2d002d);
+}
+
+.messagesSearchInput::placeholder { color: #aaa; }
+
+.messagesSearchClear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 12px;
+  padding: 0;
+}
+
+/* ── conversation search bar ── */
+.convSearchBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #61027b;
+  margin-left: auto;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.convSearchBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 1rem;
+  background: var(--bg-secondary, #f5e6ff);
+  border-bottom: 1px solid #e2a9f1;
+}
+
+.convSearchInput {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary, #2d002d);
+}
+
+.convSearchCount {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.convSearchNav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #61027b;
+  font-size: 14px;
+  padding: 2px 6px;
+}
+
+.convSearchClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+}
+
+/* ── highlighted search results in messages ── */
+.messageBubble.searchMatch  { outline: 2px solid #e2a9f1; }
+.messageBubble.searchCurrent { outline: 2px solid #61027b; }
+
+
+.messagesHeader h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent, #61027b);
+  margin: 0;
+}
+
+.messagesStatus {
+  text-align: center;
+  color: var(--accent, #61027b);
+  padding: 2rem;
+}
+
+.messagesEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 3rem 1rem;
+  color: #aaa;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ── Conversations List ── */
+.conversationsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.conversationItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 1.2rem;
+  background: var(--bg-card, #fff);
+  border-bottom: 1px solid var(--border, #e2a9f1);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.conversationItem:hover {
+  background: var(--accent-light, #f5e6ff);
+}
+
+.conversationItem.unread {
+  background: var(--accent-light, #f5e6ff);
+}
+
+.convAvatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.convInfo {
+  flex: 1;
+  overflow: hidden;
+}
+
+.convTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.convName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #2d002d);
+  margin: 0;
+}
+
+.convTime {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  flex-shrink: 0;
+}
+
+.convBottomRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.convLastMessage {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.convUnreadBadge {
+  background: var(--accent, #61027b);
+  color: #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Conversation Page ── */
+.conversationPage {
+  background: var(--bg, #f5e6ff);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.convHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.8rem 1rem;
+  background: var(--bg-card, #fff);
+  border-bottom: 1.5px solid var(--border, #e2a9f1);
+  position: sticky;
+  top: 10vh;
+  z-index: 10;
+}
+
+.convHeaderInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.convHeaderName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #2d002d);
+  margin: 0;
+}
+
+.convHeaderStatus {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  margin: 0;
+}
+
+/* ── Messages List ── */
+.messagesList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: none;
+}
+
+.messageBubbleWrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.messageBubbleWrapper.mine {
+  flex-direction: row-reverse;
+}
+
+.messageBubble {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.messageBubble.mine {
+  background: var(--accent, #61027b);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.messageBubble.theirs {
+  background: var(--bg-card, #fff);
+  color: var(--text-primary, #2d002d);
+  border: 1.5px solid var(--border, #e2a9f1);
+  border-bottom-left-radius: 4px;
+}
+
+.messageBubble p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.messageTime {
+  font-size: 10px;
+  opacity: 0.7;
+  align-self: flex-end;
+}
+
+/* ── Typing Indicator ── */
+.typingBubble {
+  display: flex;
+  flex-direction: row !important;
+  gap: 4px !important;
+  align-items: center;
+  padding: 10px 14px !important;
+}
+
+.typingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-mid, #e2a9f1);
+  animation: typingBounce 1.2s infinite;
+}
+
+.typingDot:nth-child(2) { animation-delay: 0.2s; }
+.typingDot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* ── Message Input ── */
+.messageInputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 1rem;
+  background: var(--bg-card, #fff);
+  border-top: 1.5px solid var(--border, #e2a9f1);
+  position: sticky;
+  bottom: 0;
+}
+
+.messageInput {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: 1.5px solid var(--border, #e2a9f1);
+  background: var(--bg, #f5e6ff);
+  color: var(--text-primary, #2d002d);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.messageInput:focus {
+  border-color: var(--accent, #61027b);
+}
+
+.messageInput::placeholder {
+  color: var(--text-secondary, #888);
+}
+
+.messageSendBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent, #61027b);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.messageSendBtn:hover { background: var(--accent-hover, #cb6ce6); }
+.messageSendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── search bar ── */
+.messagesSearchBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* background: var(--bg-secondary, #f5e6ff); */
+    background: var(--bg-secondary, purple);
+  border-radius: 20px;
+  padding: 8px 14px;
+  /* margin: 0 1rem 1rem; */
+    margin:  1rem 1rem;
+}
+
+.messagesSearchInput {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.messagesSearchInput::placeholder {
+  color: #aaa;
+}
+
+.messagesSearchClear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 12px;
+  padding: 0;
+}
+/* ── Instagram-style layout ── */
+.igLayout {
+  display: flex;
+  height: 90vh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.igLeft {
+  width: 360px;
+  min-width: 360px;
+  border-right: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden; /* ← panel itself never scrolls */
+  background: var(--bg-card);
+}
+
+.igLeft .conversationsList {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.igLeft .messagesHeader {
+  top: 0;
+  position: sticky;
+}
+
+.igRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.igRightEmpty {
+  align-items: center;
+  justify-content: center;
+}
+
+.igRightPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.igRight .conversationPage {
+  max-width: 100%;
+  height: 100vh;
+  margin: 0;
+}
+
+/* ── active conversation highlight ── */
+.conversationItem.active {
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+}
+
+/* ── mobile: show only one panel at a time ── */
+@media (max-width: 768px) {
+  .igLeft { width: 100%; min-width: 100%; }
+  .igRight { display: none; position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; z-index: 100; }
+  .igLeft.hidden-mobile { display: none; }
+  .igRight.visible-mobile { display: flex; }
+}
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .messagesPage,
+  .conversationPage {
+    max-width: 100%;
+  }
+ .igLayout{
+  height: 100vh;
+ }
+  .messagesHeader {
+    top: 0;
+  }
+
+  .convHeader {
+    top: 0;
+  }
+}

@@ -1,0 +1,907 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.profileMain {
+  background-color: var(--bg);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userProfileInfo {
+  height: 100vh;
+  width: 40%;
+  background-color: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1em;
+  border-right: 1.5px solid var(--border);
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 2em 1em;
+}
+
+.profileCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.profileCard p strong {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.profileCard p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.accPortfolio {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 90%;
+  background: var(--accent-light);
+  border-radius: 12px;
+  padding: 0.8em 0;
+}
+
+.portfolioCount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+}
+
+.portfolioCount p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.portfolioCount button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.threeBtns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  width: 90%;
+}
+
+.threeBtns .BFM {
+  height: 3em;
+  width: 7em;
+  border-radius: 1em;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  color: var(--accent);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.threeBtns .BFM:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.vendorBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  background: var(--bg-card);
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  padding: 0.6em 1.2em;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.vendorBtn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.vendorBtn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.socialIcon {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-radius: 12px;
+  width: 90%;
+  height: 10vh;
+  background-color: var(--accent-light);
+}
+
+.postORcart {
+  width: 60%;
+  height: 100vh;
+  background-color: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pages {
+  height: 10vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1.5px solid var(--border);
+  padding: 0.5em 0;
+}
+
+.postPage {
+  padding: 0.5em 1.5em;
+  background: var(--accent-light);
+  border-radius: 8px;
+  border: none;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ── Profile tabs ── */
+.profileTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0.5em 1.5em;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.profileTab.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+.profileTab svg {
+  font-size: 22px !important;
+}
+
+.postPage svg {
+  font-size: 28px !important;
+}
+
+.cartPage {
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.postContainer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 250px;
+  gap: 1px;
+  width: 100%;
+  height: 100vh;
+  align-items: center;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.cartContainer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 250px;
+  gap: 1px;
+  width: 100%;
+  height: 100vh;
+  align-items: center;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.postItem {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--accent-light);
+  border: 1px solid var(--border);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalBox h2 {
+  color: var(--accent);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.modalSubtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+}
+
+.modalBox .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.modalBox .field label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.modalBox .field input,
+.modalBox .field select,
+.modalBox .field textarea {
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.modalBox .field input:focus,
+.modalBox .field select:focus,
+.modalBox .field textarea:focus {
+  border-color: var(--accent);
+}
+
+.modalBtns {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.submitBtn {
+  flex: 2;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.submitBtn:hover { background: var(--accent-mid); }
+
+/* ── Profile Avatar ── */
+.profileAvatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border);
+}
+
+/* ── Bio ── */
+.profileBio {
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-secondary);
+  margin: 4px 0;
+  max-width: 220px;
+  line-height: 1.5;
+}
+
+/* ── Location & Website ── */
+.profileMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.profileMeta span,
+.profileMeta a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.profileMeta a:hover { text-decoration: underline; }
+
+/* ── Following state ── */
+.BFM.following {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+
+/* ── Edit modal top row ── */
+.modalTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTopRow h2 {
+  color: var(--accent);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.modalCloseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.modalCloseBtn:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* ── Post grid ── */
+.postContainer .userPostFeed {
+  border-radius: 0;
+  border-bottom: 1px solid var(--border);
+  border-right: none;
+  padding: 12px;
+  background: var(--bg-card);
+}
+
+/* ── Text post thumbnail ── */
+.textPostThumb {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: var(--accent-light);
+}
+
+.textPostThumb p {
+  font-size: 13px;
+  color: var(--accent);
+  text-align: center;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  margin: 0;
+}
+
+/* ── Post detail modal ── */
+.postDetailModal {
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Avatar wrapper ── */
+.avatarWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.avatarUploadBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: 2px solid var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.avatarUploadBtn:hover { background: var(--accent-mid); }
+.avatarUploadBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.avatarActions {
+  position: absolute;
+  bottom: -7px;
+  right: -20px;
+  display: flex;
+  gap: 4px;
+}
+
+.avatarDeleteBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e53935;
+  color: #fff;
+  border: 2px solid var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.avatarDeleteBtn:hover { background: #c62828; }
+
+/* ── Trust Card ── */
+.trustCard {
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0;
+  width: 90%;
+}
+
+.trustCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trustCardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+.trustBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trustRatingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trustRatingNum {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.trustRatingCount {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.trustStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.trustStatRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--accent-light);
+}
+
+.trustStatRow:last-child { border-bottom: none; }
+
+.trustStatLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trustStatLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.trustStatValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.trustVerifiedBanner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-light);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.trustReviews {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trustReviewsTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+.trustReviewCard {
+  background: var(--accent-light);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trustReviewHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trustReviewerName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.trustReviewerUsername {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.trustReviewText {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.trustReviewDate {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.trustNoReviews {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 0.5rem;
+}
+
+/* ── Settings Tab ── */
+.settingsPage {
+  background: var(--bg);
+  min-height: 100vh;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.settingsHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.settingsHeader h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+.settingsBackBtn {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--accent);
+  transition: background 0.2s;
+}
+
+.settingsBackBtn:hover { background: var(--accent-light); }
+
+.settingsSection {
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.settingsSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1.5px solid var(--border);
+}
+
+.settingsSectionHeader h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.settingsField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.settingsField label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.settingsField input {
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.settingsField input:focus { border-color: var(--accent); }
+
+.settingsTextarea {
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  background: var(--bg);
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.settingsTextarea:focus { border-color: var(--accent); }
+
+.settingsSaveBtn {
+  padding: 0.8rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.3rem;
+}
+
+.settingsSaveBtn:hover { background: var(--accent-mid); }
+.settingsSaveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.settingsError {
+  color: #e0245e;
+  font-size: 13px;
+  margin: 0;
+}
+
+.settingsSuccess {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #17bf63;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Theme Toggle ── */
+.themeToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+}
+
+.themeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.themeLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.themeSubLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.themeToggleBtn {
+  width: 52px;
+  height: 28px;
+  border-radius: 20px;
+  border: none;
+  background: var(--border);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.themeToggleBtn.dark { background: var(--accent); }
+
+.themeToggleKnob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.3s;
+  display: block;
+}
+
+.themeToggleBtn.dark .themeToggleKnob { transform: translateX(24px); }
+
+/* ── Logout ── */
+.settingsLogoutBtn {
+  width: 100%;
+  padding: 1rem;
+  background: #fff0f0;
+  color: #e0245e;
+  border: 1.5px solid #e0245e;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  margin-bottom: 2rem;
+}
+
+.settingsLogoutBtn:hover {
+  background: #e0245e;
+  color: #fff;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .settingsGrid { grid-template-columns: 1fr; }
+  .settingsPage { padding: 0.8rem; }
+}
+
+@media (max-width: 1024px) {
+  .profileMain { flex-direction: column; }
+  .userProfileInfo { width: 100%; height: auto; padding: 2em 0; }
+  .postORcart { width: 100%; height: auto; }
+}

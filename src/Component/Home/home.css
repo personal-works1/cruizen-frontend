@@ -1,0 +1,435 @@
+.homeMain {
+  display: flex;
+  width: 99%;
+  background-color: var(--bg);
+  padding: 0.4em 0.4em 1em 0.4em;
+  gap: 0.4em;
+}
+
+.topAccSection {
+  width: 23%;
+  height: 100vh;
+  background-color: var(--bg);
+  padding: 1em;
+  position: fixed;
+  left: 0;
+  top: 10vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.topAccSection h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.5em;
+}
+
+.topVendorSection {
+  border-radius: 12px;
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border);
+  padding: 0.5em;
+  margin-bottom: 1em;
+}
+
+.vendorAcc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4em 0.3em;
+  border-bottom: 1px solid var(--accent-light);
+}
+
+.vendorAcc:last-child { border-bottom: none; }
+
+.vendorProfileAccount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.fllw-Icon-Btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.fllw-Icon-Btn button {
+  background: var(--bg-card);
+  color: var(--accent);
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fllw-Icon-Btn button:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.pUsername{
+  color: var(--text-primary);
+}
+/* ── Feed ── */
+.feedsSection {
+  width: 40%;
+  background-color: var(--bg);
+  padding: 0.4em;
+  margin-left: 25%;
+}
+
+.userPostFeed {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  padding: 1em;
+  margin-bottom: 0.8em;
+}
+
+.profileNview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4em;
+}
+
+.profileNview div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.postFeedActivity {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  margin-left: 0;
+}
+
+.postFeedActivity > p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  word-break: break-word;
+  color: var(--text-primary);
+}
+
+/* ── Media ── */
+.ImgOrVideo {
+  width: 100%;
+  border-radius: 1em;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.ImgOrVideo img,
+.ImgOrVideo video {
+  width: 100%;
+  display: block;
+  max-height: 60vh;
+  object-fit: cover;
+  border-radius: 1em;
+}
+
+/* ── Engagement ── */
+.engagementContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 0.6em;
+  border-top: 1px solid var(--accent-light);
+}
+
+.engagementContainer .S {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+}
+
+.S div, .engagementContainer .O {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.S p, .O p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* ── Trending ── */
+.trendingSection {
+  width: 30%;
+  height: 100vh;
+  padding: 1em;
+  gap: 1.5em;
+  background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  right: 0;
+  top: 10vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.trendingSection h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.5em;
+}
+
+.trends {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 0.8em;
+  text-align: center;
+  margin-top: 0.3em;
+  gap: 0.4em;
+}
+
+.trends h4 {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+.trends p {
+  text-align: start;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.trendsAcc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.shortCartSection {
+  height: 40vh;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── Mini Carousel ── */
+.mini-carousel {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  position: relative;
+}
+
+.mini-track {
+  display: flex;
+  transition: transform 0.4s ease;
+  height: 100%;
+}
+
+.mini-slide {
+  min-width: 100%;
+  position: relative;
+}
+
+.bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  height: 75%;
+  background: rgba(97, 2, 123, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 14px;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  margin: 2px;
+  cursor: pointer;
+}
+
+.dot.active { background: white; }
+
+/* ── FAB ── */
+.fab-create {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(97, 2, 123, 0.3);
+  z-index: 900;
+  transition: transform 0.15s ease, background 0.2s;
+}
+
+.fab-create:hover {
+  transform: scale(1.08);
+  background: var(--accent-mid);
+}
+
+/* ── Comment Section ── */
+.commentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  margin-top: 0.5em;
+  padding-top: 0.5em;
+  border-top: 1px solid var(--accent-light);
+}
+
+.commentInputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.commentInput {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--accent-light);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+}
+
+.commentInput::placeholder { color: var(--text-secondary); }
+.commentInput:focus { border-color: var(--accent); }
+
+.commentPostBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.commentPostBtn:hover { background: var(--accent-mid); }
+.commentPostBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.commentItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.commentContent {
+  background: var(--accent-light);
+  border-radius: 12px;
+  padding: 6px 12px;
+  flex: 1;
+}
+
+.commentContent strong {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 2px;
+  color: var(--accent);
+}
+
+.commentContent p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.commentStatus {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Follow Buttons ── */
+.followBtn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--accent);
+  background: var(--bg-card);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.followBtn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.followingBtn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .homeMain { width: auto; }
+  .topAccSection, .trendingSection { display: none; }
+  .feedsSection { width: 100%; margin-left: 0; }
+  .fab-create { bottom: 100px; right: 10px; }
+}

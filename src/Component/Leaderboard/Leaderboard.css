@@ -1,0 +1,195 @@
+.leaderboardPage {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1rem 1rem 4rem;
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.leaderboardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.5rem 0 1rem;
+}
+
+.leaderboardHeader h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+/* ── Tabs ── */
+.leaderboardTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+  margin-bottom: 1rem;
+}
+
+.leaderboardTab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.leaderboardTab.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ── Podium ── */
+.leaderboardPodium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem 1rem;
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.podiumCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.podiumCard:hover { transform: translateY(-2px); }
+
+.podiumCard.rank1 { order: 2; }
+.podiumCard.rank2 { order: 1; }
+.podiumCard.rank3 { order: 3; }
+
+.podiumName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  max-width: 80px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podiumScore {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+/* ── Ranked list ── */
+.leaderboardList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaderboardItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.leaderboardItem:hover { background: var(--accent-light); }
+
+.leaderboardItemInfo {
+  flex: 1;
+}
+
+.leaderboardItemName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.leaderboardItemUsername {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.leaderboardItemScore {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+/* ── Hall of Fame ── */
+.hofPeriod {
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hofPeriodHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1.5px solid var(--border);
+}
+
+.hofPeriodHeader h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+.hofCategory {
+  margin-bottom: 1rem;
+}
+
+.hofCategoryLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0 0 0.5rem;
+}
+
+.hofEntry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 4px;
+}
+
+.hofEntry:hover { background: var(--accent-light); }

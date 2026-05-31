@@ -1,0 +1,104 @@
+.notificationsPage {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.notificationsContainer {
+  width: 100%;
+  max-width: 600px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  overflow: hidden;
+  height: fit-content;
+}
+
+.notificationsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notificationsHeader h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.markAllBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.notifItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--accent-light);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.notifItem:hover { background: var(--accent-light); }
+
+.notifItem.unread {
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+}
+
+.notifAvatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.notifTypeIcon {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: var(--bg-card);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.notifContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.notifContent span {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.notifTime {
+  font-size: 11px !important;
+  color: var(--text-secondary) !important;
+}
+
+.notifStatus {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+  font-size: 14px;
+}

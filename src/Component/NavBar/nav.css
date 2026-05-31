@@ -1,0 +1,151 @@
+.Heading {
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--accent);
+  width: 100%;
+  height: 10vh;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  align-items: center;
+}
+
+.headingSmallDevice { display: none; }
+
+.schoolApp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  height: 30%;
+  max-width: 500px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 999px;
+}
+
+.UniName {
+  background-color: transparent;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.schoolApp input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+}
+
+.schoolApp input::placeholder { color: rgba(255,255,255,0.6); }
+
+.navBar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+}
+
+.Links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 0.5em;
+  color: white;
+  text-decoration: none;
+  height: 100%;
+}
+
+.linkName {
+  text-decoration: none;
+  font-size: 15px;
+  opacity: 0;
+  display: none;
+}
+
+.navAuth {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding-right: 1em;
+}
+
+.navUsername {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  color: #fff;
+  padding: 0.3em 0.8em;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background: #fff;
+  color: var(--accent);
+}
+
+.loginBtn {
+  background: #fff;
+  border: none;
+  color: var(--accent);
+  padding: 0.4em 1em;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 1024px) {
+  .Heading {
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+    top: auto;
+    bottom: 20px;
+    width: 100%;
+    padding: 0;
+    height: 7vh;
+    box-shadow: none;
+    background: none;
+  }
+
+  .schoolApp, .linkName, .leaderBoard { display: none; }
+
+  .navBar {
+    justify-content: space-evenly;
+    gap: 0.1em;
+    height: 100%;
+    border-radius: 1.5em;
+    padding: 0;
+    background-color: var(--accent);
+  }
+
+  .Links { padding: 0.2em; }
+
+  .headingSmallDevice {
+    height: 4em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--accent);
+    margin: 0;
+    padding-left: 1em;
+  }
+
+  .schoolAppSmallDevice {
+    margin: 0;
+    color: #fff;
+    font-size: 1.2rem;
+  }
+}
