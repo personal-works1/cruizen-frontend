@@ -8,7 +8,6 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { useAuth } from "../Context/AuthContext";
 
-// export const API_URL = "http://localhost:3000";
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
 
 function Auth() {
