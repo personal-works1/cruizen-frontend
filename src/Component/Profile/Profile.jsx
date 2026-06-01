@@ -457,6 +457,7 @@ function Profile() {
 
   // ── Follow / Unfollow ─────────────────────────────────────────────────
   const handleFollowToggle = async () => {
+     if (!me) return navigate("/auth")
     if (followPending) return;
     setFollowPending(true);
     const isFollowing = profileData.is_following;
