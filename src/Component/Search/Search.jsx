@@ -156,6 +156,7 @@ function UserCard({ user, authHeader, onFollowToggle }) {
 
   const handleFollow = async (e) => {
     e.stopPropagation()
+      if (!user) return navigate("/auth") 
     if (pending) return
     setPending(true)
     try {
@@ -277,7 +278,7 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
 
 // ── Main Search ───────────────────────────────────────────────────────────────
 function Search() {
-  const { getValidToken } = useAuth()
+  const { getValidToken, user } = useAuth()
   const navigate          = useNavigate()
 
   const [query,        setQuery]        = useState("")
@@ -298,8 +299,9 @@ function Search() {
  useEffect(() => {
   const fetchDiscover = async () => {
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
+      let token = null
+      try { token = await getValidToken() } catch {}
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
       const [discoverRes, productsRes, trendingRes] = await Promise.all([
         axios.get(`${API_URL}/search/discover`, { headers }),
@@ -321,22 +323,25 @@ function Search() {
 }, [])
 
   // ── debounced autocomplete ─────────────────────────────────────────────────
-  useEffect(() => {
-    if (!query.trim()) { setShowDropdown(false); setDropdown({}); return }
-    clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const token = await getValidToken()
-        const res = await axios.get(
-          `${API_URL}/search/autocomplete?q=${encodeURIComponent(query)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-        setDropdown(res.data.results)
-        setShowDropdown(true)
-      } catch (err) { console.error(err) }
-    }, 300)
-    return () => clearTimeout(debounceRef.current)
-  }, [query])
+ useEffect(() => {
+  if (!query.trim()) { setShowDropdown(false); setDropdown({}); return }
+  clearTimeout(debounceRef.current)
+  debounceRef.current = setTimeout(async () => {
+    try {
+      let token = null
+      try { token = await getValidToken() } catch {}
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+
+      const res = await axios.get(
+        `${API_URL}/search/autocomplete?q=${encodeURIComponent(query)}`,
+        { headers }
+      )
+      setDropdown(res.data.results)
+      setShowDropdown(true)
+    } catch (err) { console.error(err) }
+  }, 300)
+  return () => clearTimeout(debounceRef.current)
+}, [query])
 
   // ── close dropdown on outside click ───────────────────────────────────────
   useEffect(() => {
@@ -351,6 +356,7 @@ function Search() {
 
   // ── full search ────────────────────────────────────────────────────────────
   const handleSearch = async () => {
+     if (!user) return navigate("/auth") //I added this
     if (!query.trim()) return
     setShowDropdown(false)
     setSearching(true)
@@ -379,6 +385,7 @@ function Search() {
   }
 
   const handleLikeToggle = async (post) => {
+     if (!user) return navigate("/auth")
     const liked = post.liked_by_me
     try {
       const token = await getValidToken()
