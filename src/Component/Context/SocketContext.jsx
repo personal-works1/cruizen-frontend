@@ -12,9 +12,9 @@ export function SocketProvider({ children }) {
   useEffect(() => {
     if (!user) return
 
-    const newSocket = io("http://localhost:3000", {
-      transports: ["websocket"]
-    })
+   const newSocket = io("https://cruizen-backend.onrender.com", {
+  transports: ["websocket", "polling"]
+})
 
     newSocket.on("connect", () => {
       newSocket.emit("user_online", user.id)
