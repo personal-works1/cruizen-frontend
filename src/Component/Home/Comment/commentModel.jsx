@@ -8,7 +8,7 @@ import UserAvatar from "../../Common/UserAvatar";
 import { useAuth } from "../../Context/AuthContext";
 import { useMode } from "../../Context/modeContext";
 
-export default function CommentModal({ post, onClose }) {
+export default function CommentModal({ post, onClose, onCommentAdded }) {
   const [comments, setComments]       = useState([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading]         = useState(true);
@@ -60,6 +60,7 @@ export default function CommentModal({ post, onClose }) {
       }
       setComments((prev) => [...prev, newComment]);
       setCommentText("");
+      onCommentAdded?.()
     } catch (err) {
       console.error("Failed to post comment", err);
     } finally {

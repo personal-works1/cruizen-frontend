@@ -30,6 +30,7 @@ export default function PostCard({ post, onLikeToggle, onRepostToggle, onBookmar
   const [viewCounted,      setViewCounted]      = useState(false) // ← prevent double counting
   const cardRef = useRef(null) // ← ref to detect when card enters viewport
   const [badges, setBadges] = useState([])
+  const [localCommentsCount, setLocalCommentsCount] = useState(post.comments_count || 0)
 
   const profileUsername = post.real_username || post.username
 
@@ -49,6 +50,9 @@ useEffect(() => {
   }
   if (post.user_id) fetchBadges()
 }, [post.user_id])
+useEffect(() => {
+  setLocalCommentsCount(post.comments_count || 0)
+}, [post.comments_count])
 
   // ── silently record view when post enters viewport ───────────────────
   // uses IntersectionObserver — fires when 60% of post is visible
@@ -159,7 +163,7 @@ useEffect(() => {
             </div>
             <div onClick={() => setShowCommentModal(true)} style={{ cursor: "pointer" }}>
               <CommentOutlinedIcon style={{ color: "var(--text-primary)" }} />
-              <p style={{ color: "var(--text-primary)" }}>{post.comments_count || 0}</p>
+              <p style={{ color: "var(--text-primary)" }}>{localCommentsCount}</p>
             </div>
             <div onClick={() => onRepostToggle(post)} style={{ cursor: "pointer" }}>
               <RepeatOutlinedIcon style={{ color: isReposted ? "#17bf63" : "var(--text-primary)" }} />
@@ -182,8 +186,12 @@ useEffect(() => {
       </div>
 
       {showCommentModal && (
-        <CommentModal post={post} onClose={() => setShowCommentModal(false)} />
-      )}
+  <CommentModal 
+    post={post} 
+    onClose={() => setShowCommentModal(false)}
+    onCommentAdded={() => setLocalCommentsCount(prev => prev + 1)}
+  />
+)}
     </div>
   )
 }
