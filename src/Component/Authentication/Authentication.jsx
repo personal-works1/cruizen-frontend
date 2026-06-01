@@ -158,7 +158,7 @@ function Auth() {
                     <label>Username</label>
                     <div className="input-wrapper">
                       <input
-                        type="text" name="username" placeholder="@james"
+                        type="text" name="username" placeholder="james_123"
                         onChange={handleChange} required
                         style={{
                           borderColor: usernameStatus === "available" ? "#17bf63"
