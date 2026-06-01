@@ -110,8 +110,8 @@ useEffect(() => {
   if (authLoading) return // ← guard
   const fetchFeed = async () => {
     try {
-      const token = await getValidToken()
-      if (!token) return
+      let token = null
+      try { token = await getValidToken() } catch {}
       const res = await axios.get(`${API_URL}/posts/feed`, {
         headers: { Authorization: `Bearer ${token}` },
       })
