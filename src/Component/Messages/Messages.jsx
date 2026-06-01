@@ -46,8 +46,15 @@ export default function Messages() {
   const typingTimeoutRef = useRef(null)
   const messageRefs      = useRef({})
 
+   useEffect(() => {
+    if (!user) navigate("/auth")
+  }, [user])
+
+  if (!user) return null 
+
   // ── fetch conversations ───────────────────────────────────────────────
   useEffect(() => {
+    if(!user) return
     const fetch = async () => {
       try {
         const token = await getValidToken()
