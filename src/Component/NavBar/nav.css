@@ -9,6 +9,38 @@
   z-index: 10;
   align-items: center;
 }
+.guestBanner {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.guestBanner button {
+  background: #fff;
+  color: var(--accent);
+  border: none;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guestBanner .guestSignup {
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid #fff;
+}
 
 .headingSmallDevice { display: none; }
 

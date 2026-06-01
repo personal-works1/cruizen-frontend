@@ -24,7 +24,9 @@ import Reels from "./Component/Search/Reels"
 
 function Layout() {
   const location = useLocation();
-  const hideNav = location.pathname === "/usersignIn" || 
+  const hideNav = location.pathname === "/usersignIn" ||
+                location.pathname === "/forgot-password" ||
+                location.pathname === "/verify-email" ||
                 location.pathname.startsWith("/reels")
 
   return (

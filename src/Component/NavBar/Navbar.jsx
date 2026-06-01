@@ -22,6 +22,8 @@ import { useMode } from "../Context/modeContext";
 
 export function HeadingSmallDevice() {
   return (
+
+    
     <div className="headingSmallDevice">
       <h1 className="schoolAppSmallDevice">Cruizen</h1>
 
@@ -106,6 +108,14 @@ function NavBar() {
 
   return (
     <>
+
+    {!user && (
+      <div className="guestBanner">
+        <span>You're browsing as a guest.</span>
+        <button onClick={() => navigate("/usersignIn")}>Sign in</button>
+        <button onClick={() => navigate("/usersignIn")} className="guestSignup">Sign up</button>
+      </div>
+    )}
       <div className="Heading">
         <h1 className="schoolApp UniName">Cruizen</h1>
    
