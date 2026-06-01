@@ -378,7 +378,7 @@ const authHeader = { Authorization: `Bearer ${token}` }
       <div className="vendorAcc" key={v.id}>
         <div
           className="vendorProfileAccount"
-         onClick={() => navigate(`/shop/${v.business_name?.toLowerCase().replace(/ /g, "-")}`)}
+         oonClick={() => navigate(`/shop/${v.id}`)}
           style={{ cursor: 'pointer' }}
         >
           <UserAvatar  avatar_url={v.avatar_url} size={42} />

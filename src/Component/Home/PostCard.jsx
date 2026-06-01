@@ -103,12 +103,24 @@ useEffect(() => {
   avatar_url={post.avatar_url}
   size={40}
   style={{ cursor: "pointer" }}
-  onClick={() => navigate(`/Profile/${profileUsername}`)}
+ onClick={() => {
+  if (post.author_type === "business") {
+    navigate(`/shop/${post.vendor_id}`)
+  } else {
+    navigate(`/profile/${post.real_username}`)
+  }
+}}
 />
           <p
             className="pUsername"
             style={{ cursor: "pointer", color: "var(--text-primary)" }}  // ← added color
-            onClick={() => navigate(`/Profile/${profileUsername}`)}
+            onClick={() => {
+  if (post.author_type === "business") {
+    navigate(`/shop/${post.vendor_id}`)
+  } else {
+    navigate(`/profile/${post.real_username}`)
+  }
+}}
           >
             {post.name || post.username}
             {post.author_type === "business" && (

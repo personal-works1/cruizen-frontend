@@ -113,7 +113,7 @@ function NavBar() {
       <div className="guestBanner">
         <span>You're browsing as a guest.</span>
         <button onClick={() => navigate("/usersignIn")}>Sign in</button>
-        <button onClick={() => navigate("/usersignIn")} className="guestSignup">Sign up</button>
+        {/* <button onClick={() => navigate("/usersignIn")} className="guestSignup">Sign up</button> */}
       </div>
     )}
       <div className="Heading">
@@ -233,6 +233,7 @@ function NavBar() {
           </IconButton>
 
           {/* ── Profile / Business ── */}
+          {user && (
           <NavLink
             className="Links"
             to={`/profile/${user?.username}`}
@@ -261,6 +262,7 @@ function NavBar() {
               </>
             )}
           </NavLink>
+          )}
 
             {/* ── Leaderboard ── */}
           <div className="leaderBoard">
