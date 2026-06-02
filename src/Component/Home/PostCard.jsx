@@ -242,7 +242,7 @@ export default function PostCard({
                 {post.bookmarks_count || 0}
               </p>
             </div>
-            // in PostCard, inside profileNview div
+           
 {user?.id === post.user_id && (
   <button
     onClick={async () => {
