@@ -64,15 +64,14 @@ useEffect(() => {
       let convList = res.data.conversations
 
       // ← if coming from profile message button, merge that conv in
-      if (location.state?.openConversation) {
-        const conv = location.state.openConversation
-        const exists = convList.find(c => c.id === conv.id)
-        if (!exists) convList = [conv, ...convList]
-        
-        // auto open it
-        setActiveConvId(conv.id)
-        setActiveConv(conv)
-      }
+     if (location.state?.openConversation) {
+  const conv = location.state.openConversation
+  const exists = convList.find(c => c.id === conv.id)
+  const fullConv = exists || conv  // ← use full version if available
+  if (!exists) convList = [fullConv, ...convList]
+  setActiveConvId(fullConv.id)
+  setActiveConv(fullConv)  // ← now has all fields
+}
 
       setConversations(convList)
     } catch (err) {
