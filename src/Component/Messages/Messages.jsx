@@ -52,24 +52,37 @@ export default function Messages() {
 
   if (!user) return null 
 
-  // ── fetch conversations ───────────────────────────────────────────────
-  useEffect(() => {
-    if(!user) return
-    const fetch = async () => {
-      try {
-        const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/messages/conversations`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        setConversations(res.data.conversations)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
+useEffect(() => {
+  if (!user) return
+  const fetch = async () => {
+    try {
+      const token = await getValidToken()
+      const res = await axios.get(`${API_URL}/messages/conversations`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      let convList = res.data.conversations
+
+      // ← if coming from profile message button, merge that conv in
+      if (location.state?.openConversation) {
+        const conv = location.state.openConversation
+        const exists = convList.find(c => c.id === conv.id)
+        if (!exists) convList = [conv, ...convList]
+        
+        // auto open it
+        setActiveConvId(conv.id)
+        setActiveConv(conv)
       }
+
+      setConversations(convList)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-    fetch()
-  }, [])
+  }
+  fetch()
+}, [user, location.state])
 
   // ── fetch messages when active conversation changes ───────────────────
   useEffect(() => {

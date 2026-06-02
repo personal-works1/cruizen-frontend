@@ -609,14 +609,17 @@ function Profile() {
   };
 
   // ── Message ───────────────────────────────────────────────────────────
-  const handleMessage = async () => {
-    if (!token) { navigate("/usersignIn"); return; }
-    try {
-      const res = await axios.post(`${API_URL}/messages/conversation`,
-        { user2: profileData.id }, { headers: authHeader });
-      navigate(`/messages/${res.data.conversation.id}`);
-    } catch (err) { console.error(err); }
-  };
+// in profile page handleMessage
+const handleMessage = async () => {
+  if (!token) { navigate("/usersignIn"); return; }
+  try {
+    const res = await axios.post(`${API_URL}/messages/conversation`,
+      { user2: profileData.id }, { headers: authHeader });
+    navigate("/messages", { 
+      state: { openConversation: res.data.conversation } 
+    })
+  } catch (err) { console.error(err); }
+}
 
   // ── Post grid render helper ───────────────────────────────────────────
   const renderPostGrid = (items, emptyMsg) => (
