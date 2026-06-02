@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Auth.css";
@@ -47,7 +47,7 @@ function Auth() {
         } catch {
           setUsernameStatus(null)
         }
-      }, 500) // ← wait 500ms after user stops typing
+      }, 500)
     }
   }
 
@@ -63,36 +63,32 @@ function Auth() {
     }
 
     try {
-  if (isLogin) {
-    const response = await axios.post(`${API_URL}/auth/login`, {
-      Identifier: form.Identifier?.trim(),
-      password:   form.password?.trim(),
-    })
-    login(response.data.token, response.data.refreshToken, response.data.user)
-    navigate("/")
-  } else {
-    const response = await axios.post(`${API_URL}/auth/register`, {
-      name:            form.name?.trim(),
-      username:        form.username?.trim(),
-      email:           form.email?.trim().toLowerCase(),
-      phone:           form.phone?.trim(),
-      password:        form.password?.trim(),
-      confirmPassword: form.confirmPassword?.trim(),
-      level:           form.level?.trim(),
-      role:            "user",
-    })
-    // ← redirect to verify page with email
-    navigate("/verify-email", { state: { email: response.data.email } })
-  }
-} catch (error) {
-  console.error(error)
-  // ← if login fails because email not verified → redirect to verify page
-  if (error.response?.status === 403 && error.response?.data?.email) {
-    navigate("/verify-email", { state: { email: error.response.data.email } })
-    return
-  }
-  alert(error.response?.data?.error || "Something went wrong")
-}
+      if (isLogin) {
+        const response = await axios.post(`${API_URL}/auth/login`, {
+          Identifier: form.Identifier?.trim(),
+          password:   form.password?.trim(),
+        })
+        login(response.data.token, response.data.refreshToken, response.data.user)
+        navigate("/")
+      } else {
+        const response = await axios.post(`${API_URL}/auth/register`, {
+          name:            form.name?.trim(),
+          username:        form.username?.trim(),
+          email:           form.email?.trim().toLowerCase(),
+          phone:           form.phone?.trim(),
+          password:        form.password?.trim(),
+          confirmPassword: form.confirmPassword?.trim(),
+          level:           form.level?.trim(),
+          role:            "user",
+        })
+        // ← auto-verified: log straight in, no email step
+        login(response.data.token, response.data.refreshToken, response.data.user)
+        navigate("/")
+      }
+    } catch (error) {
+      console.error(error)
+      alert(error.response?.data?.error || "Something went wrong")
+    }
   }
 
   return (
@@ -166,7 +162,6 @@ function Auth() {
                             : undefined
                         }}
                       />
-                      {/* ── status icon ── */}
                       {usernameStatus === "checking" && (
                         <span className="eye-icon" style={{ color: "#888", fontSize: 12 }}>...</span>
                       )}
@@ -181,7 +176,6 @@ function Auth() {
                         </span>
                       )}
                     </div>
-                    {/* ── status message ── */}
                     {usernameStatus === "available" && (
                       <p style={{ fontSize: "11px", color: "#17bf63", margin: "3px 0 0" }}>
                         ✓ Username available
@@ -242,7 +236,6 @@ function Auth() {
                         {showConfirmPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
                       </span>
                     </div>
-                    {/* ── match indicator ── */}
                     {form.confirmPassword.length > 0 && (
                       <p style={{
                         fontSize: "11px", margin: "3px 0 0",

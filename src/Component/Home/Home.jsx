@@ -470,6 +470,7 @@ const authHeader = { Authorization: `Bearer ${token}` }
       onLikeToggle={handleLikeToggle}
       onRepostToggle={handleRepostToggle}
       onBookmarkToggle={handleBookmarkToggle}
+      onDelete={(postId) => setPosts(prev => prev.filter(p => p.id !== postId))}
     />
      {index === 2 && <FanFavoriteBanner />}
     {/* ── inject recommended products strip after every 5th post ── */}
