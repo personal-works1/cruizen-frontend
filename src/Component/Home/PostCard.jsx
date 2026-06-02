@@ -243,7 +243,7 @@ export default function PostCard({
               </p>
             </div>
            
-{user?.id === post.user_id && (
+{user && user.id === post.user_id && (
   <button
     onClick={async () => {
       if (!window.confirm("Delete this post?")) return

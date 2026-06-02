@@ -10,7 +10,7 @@
   align-items: center;
 }
 .guestBanner {
-  width: 100%;
+  /* width: 100%; */
   background: var(--accent);
   color: #fff;
   text-align: center;
