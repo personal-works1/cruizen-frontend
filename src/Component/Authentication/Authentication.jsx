@@ -8,9 +8,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { useAuth } from "../Context/AuthContext";
 
-
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
-console.log("env:", import.meta.env.VITE_API_URL)
 
 function Auth() {
   const { login } = useAuth();
@@ -19,22 +17,20 @@ function Auth() {
   const [isLogin,             setIsLogin]             = useState(true);
   const [showPassword,        setShowPassword]        = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [submitting,          setSubmitting]          = useState(false) // ← NEW
   const [form, setForm] = useState({
     name: "", username: "", email: "", phone: "",
     password: "", confirmPassword: "", level: "", role: "user",
   });
 
-  // ── username availability state ───────────────────────────────────────
-  const [usernameStatus,  setUsernameStatus]  = useState(null) // null | 'checking' | 'available' | 'taken'
+  const [usernameStatus,  setUsernameStatus]  = useState(null)
   const usernameDebounce = useRef(null)
 
-  // ── password match state ──────────────────────────────────────────────
   const passwordsMatch = form.confirmPassword.length > 0 && form.password === form.confirmPassword
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
 
-    // ── check username availability as user types ─────────────────────
     if (e.target.name === "username") {
       const val = e.target.value.trim()
       if (!val) { setUsernameStatus(null); return }
@@ -58,10 +54,11 @@ function Auth() {
     if (!isLogin && form.password !== form.confirmPassword) {
       alert("Passwords do not match"); return
     }
-
     if (!isLogin && usernameStatus === "taken") {
       alert("Username is already taken"); return
     }
+
+    setSubmitting(true) // ← disable button + show spinner
 
     try {
       if (isLogin) {
@@ -82,13 +79,13 @@ function Auth() {
           level:           form.level?.trim(),
           role:            "user",
         })
-        // ← auto-verified: log straight in, no email step
         login(response.data.token, response.data.refreshToken, response.data.user)
         navigate("/")
       }
     } catch (error) {
       console.error(error)
       alert(error.response?.data?.error || "Something went wrong")
+      setSubmitting(false) // ← re-enable only on error, not on success
     }
   }
 
@@ -130,8 +127,6 @@ function Auth() {
                     </span>
                   </div>
                 </div>
-
-                {/* ── forgot password link ── */}
                 <p style={{ textAlign: "right", margin: "-0.5rem 0 0.8rem" }}>
                   <span
                     onClick={() => navigate("/forgot-password")}
@@ -149,8 +144,6 @@ function Auth() {
                     <input type="text" name="name" placeholder="James"
                       onChange={handleChange} required />
                   </div>
-
-                  {/* ── username field with availability indicator ── */}
                   <div className="field">
                     <label>Username</label>
                     <div className="input-wrapper">
@@ -178,14 +171,10 @@ function Auth() {
                       )}
                     </div>
                     {usernameStatus === "available" && (
-                      <p style={{ fontSize: "11px", color: "#17bf63", margin: "3px 0 0" }}>
-                        ✓ Username available
-                      </p>
+                      <p style={{ fontSize: "11px", color: "#17bf63", margin: "3px 0 0" }}>✓ Username available</p>
                     )}
                     {usernameStatus === "taken" && (
-                      <p style={{ fontSize: "11px", color: "#e53935", margin: "3px 0 0" }}>
-                        ✕ Username already taken
-                      </p>
+                      <p style={{ fontSize: "11px", color: "#e53935", margin: "3px 0 0" }}>✕ Username already taken</p>
                     )}
                   </div>
                 </div>
@@ -218,8 +207,6 @@ function Auth() {
                       </span>
                     </div>
                   </div>
-
-                  {/* ── confirm password with match indicator ── */}
                   <div className="field">
                     <label>Confirm Password</label>
                     <div className="input-wrapper">
@@ -238,10 +225,7 @@ function Auth() {
                       </span>
                     </div>
                     {form.confirmPassword.length > 0 && (
-                      <p style={{
-                        fontSize: "11px", margin: "3px 0 0",
-                        color: passwordsMatch ? "#17bf63" : "#e53935"
-                      }}>
+                      <p style={{ fontSize: "11px", margin: "3px 0 0", color: passwordsMatch ? "#17bf63" : "#e53935" }}>
                         {passwordsMatch ? "✓ Passwords match" : "✕ Passwords do not match"}
                       </p>
                     )}
@@ -265,10 +249,23 @@ function Auth() {
               </>
             )}
 
-            <button type="submit" className="submit-btn"
-              disabled={!isLogin && usernameStatus === "taken"}>
-              {isLogin ? "Login" : "Create Account"}
+            {/* ── submit button with loading state ── */}
+            <button
+              type="submit"
+              className="submit-btn"
+              disabled={submitting || (!isLogin && usernameStatus === "taken")}
+              style={{ opacity: submitting ? 0.7 : 1, cursor: submitting ? "not-allowed" : "pointer" }}
+            >
+              {submitting ? (
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                  <span className="auth-spinner" />
+                  {isLogin ? "Logging in..." : "Creating account..."}
+                </span>
+              ) : (
+                isLogin ? "Login" : "Create Account"
+              )}
             </button>
+
             <p className="auth-footer">
               {isLogin ? "No account?" : "Already have one?"}
               <span onClick={() => setIsLogin(!isLogin)}>
