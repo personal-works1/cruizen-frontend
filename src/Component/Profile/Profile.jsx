@@ -457,28 +457,32 @@ function Profile() {
 
   // ── Follow / Unfollow ─────────────────────────────────────────────────
   const handleFollowToggle = async () => {
-     if (!me) return navigate("/auth")
-    if (followPending) return;
-    setFollowPending(true);
-    const isFollowing = profileData.is_following;
-    try {
-      if (isFollowing) {
-        await axios.delete(`${API_URL}/profile/${profileData.username}/follow`, { headers: authHeader });
-      } else {
-        await axios.post(`${API_URL}/profile/${profileData.username}/follow`, {}, { headers: authHeader });
-      }
-      setProfileData((prev) => ({
-        ...prev,
-        is_following: !isFollowing,
-        followers_count: isFollowing ? prev.followers_count - 1 : prev.followers_count + 1,
-      }));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setFollowPending(false);
-    }
-  };
+  if (!me) return navigate("/auth")
+  if (followPending) return
+  setFollowPending(true)
+  const isFollowing = profileData.is_following
 
+  try {
+    const freshToken = await getValidToken()  // ← always fresh
+    const headers = { Authorization: `Bearer ${freshToken}` }
+
+    if (isFollowing) {
+      await axios.delete(`${API_URL}/profile/${profileData.username}/follow`, { headers })
+    } else {
+      await axios.post(`${API_URL}/profile/${profileData.username}/follow`, {}, { headers })
+    }
+
+    setProfileData((prev) => ({
+      ...prev,
+      is_following: !isFollowing,
+      followers_count: isFollowing ? prev.followers_count - 1 : prev.followers_count + 1,
+    }))
+  } catch (err) {
+    console.error(err)
+  } finally {
+    setFollowPending(false)
+  }
+}
   // ── Profile saved callback ────────────────────────────────────────────
   const handleProfileSaved = (updatedData) => {
     if (isBusinessView) {
@@ -754,7 +758,8 @@ const handleMessage = async () => {
                 disabled={followPending}
               >
                 {profileData.is_following ? "Unfollow" : "Follow"}
-              </button>
+                {console.log(profileData.is_following)}
+              </button>    
             )}
 
             {!isOwnProfile && (

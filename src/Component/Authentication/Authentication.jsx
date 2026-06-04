@@ -8,8 +8,9 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { useAuth } from "../Context/AuthContext";
 
-// export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
-export const API_URL = "https://cruizen-backend.onrender.com"
+
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+console.log("env:", import.meta.env.VITE_API_URL)
 
 function Auth() {
   const { login } = useAuth();

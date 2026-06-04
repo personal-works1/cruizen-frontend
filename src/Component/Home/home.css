@@ -1,6 +1,7 @@
 .homeMain {
   display: flex;
   width: 99%;
+  min-height: 100vh; 
   background-color: var(--bg);
   padding: 0.4em 0.4em 1em 0.4em;
   gap: 0.4em;
@@ -425,6 +426,109 @@
   cursor: pointer;
   transition: all 0.2s;
 }
+/* ── Add these to the bottom of your existing home.css ── */
+
+/* ─────────────────────────────────────────────
+   SHIMMER ANIMATION
+   The moving highlight that makes skeletons
+   look like they're loading
+───────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg-card)   25%,
+    var(--border)    50%,
+    var(--bg-card)   75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+/* ─────────────────────────────────────────────
+   SKELETON CARD
+   Matches the shape of a real PostCard so
+   the layout doesn't jump when posts load
+───────────────────────────────────────────── */
+.skeleton-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  padding: 1em;
+  margin-bottom: 0.8em;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.skeleton-media {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.skeleton-footer {
+  display: flex;
+  gap: 1rem;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--accent-light);
+}
+
+.skeleton-action {
+  width: 48px;
+  height: 20px;
+  border-radius: 6px;
+}
+
+/* ─────────────────────────────────────────────
+   DOT PULSE
+   Three bouncing dots shown when loading
+   more posts at the bottom of the feed.
+   Much less jarring than a full skeleton
+   since the feed is already visible.
+───────────────────────────────────────────── */
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1;   }
+}
+
+.dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dotPulse 1.2s infinite ease-in-out;
+}
+
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
