@@ -10,13 +10,13 @@ import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined'
+import { OrdersTabSkeleton } from './Cart'
 
 const STATUS_CONFIG = {
   paid:      { label: 'Awaiting Delivery', color: '#f5a623', icon: <AccessTimeIcon sx={{ fontSize: 14 }} /> },
   delivered: { label: 'Delivered',         color: '#17bf63', icon: <LocalShippingOutlinedIcon sx={{ fontSize: 14 }} /> },
   completed: { label: 'Completed',         color: '#61027b', icon: <CheckCircleOutlineIcon sx={{ fontSize: 14 }} /> },
 }
-
 
 function OrderCard({ order, type }) {
   const navigate = useNavigate()
@@ -54,14 +54,12 @@ function OrderCard({ order, type }) {
 
 export default function OrdersTab() {
   const { token, user } = useAuth()
-  console.log('full user object:', user)
-  const [view,    setView]    = useState('purchases') // 'purchases' | 'sales'
+  const [view,    setView]    = useState('purchases')
   const [orders,  setOrders]  = useState([])
   const [loading, setLoading] = useState(true)
   const authHeader = { Authorization: `Bearer ${token}` }
 
- const isVendor = user?.role === 'vendor' || user?.role === 'both'
-// console.log('isVendor:', isVendor, 'role:', user?.role)
+  const isVendor = user?.role === 'vendor' || user?.role === 'both'
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -71,7 +69,6 @@ export default function OrdersTab() {
           ? `${API_URL}/orders/my/purchases`
           : `${API_URL}/orders/my/sales`
         const res = await axios.get(endpoint, { headers: authHeader })
-        console.log("orders response:" , res.data )
         setOrders(res.data)
       } catch (err) {
         console.error(err)
@@ -82,8 +79,6 @@ export default function OrdersTab() {
     fetchOrders()
   }, [view])
 
-  
-  
   return (
     <div className="ordersTab">
       {/* Toggle */}
@@ -104,9 +99,27 @@ export default function OrdersTab() {
         )}
       </div>
 
-      {/* List */}
+      {/* List: skeleton while loading */}
       {loading ? (
-        <p className="ordersEmpty">Loading orders...</p>
+        // reuse the skeleton from Cart but skip the toggle row (already rendered above)
+        <div className="ordersList">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="orderCard" style={{ cursor: "default", pointerEvents: "none" }}>
+              <div className="orderCardLeft">
+                <div className="skelLine shimmer"
+                  style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0 }} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+                  <div className="skelLine shimmer" style={{ width: "70%", height: 13 }} />
+                  <div className="skelLine shimmer" style={{ width: "50%", height: 11 }} />
+                  <div className="skelLine shimmer" style={{ width: "60%", height: 11 }} />
+                  <div className="skelLine shimmer" style={{ width: "35%", height: 10 }} />
+                </div>
+              </div>
+              <div className="skelLine shimmer"
+                style={{ width: 90, height: 26, borderRadius: 20, flexShrink: 0 }} />
+            </div>
+          ))}
+        </div>
       ) : orders.length === 0 ? (
         <div className="ordersEmptyState">
           <ShoppingBagOutlinedIcon sx={{ fontSize: 48, color: '#e2a9f1' }} />

@@ -893,6 +893,131 @@
   background: #e0245e;
   color: #fff;
 }
+/* ════════════════════════════════════════════════════════════════════════════
+   SKELETON / SHIMMER — append to profile.css
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shimmer animation ── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--accent-light) 25%,
+    color-mix(in srgb, var(--accent-light) 60%, var(--bg-card)) 50%,
+    var(--accent-light) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 8px;
+}
+
+/* ── Skeleton line (text placeholders) ── */
+.skeletonLine {
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Skeleton avatar circle ── */
+.skeletonAvatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Profile header skeleton wrapper ── */
+.profileHeaderSkeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+/* ── Stats bar skeleton ── */
+.skeletonStatsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 90%;
+  background: var(--accent-light);
+  border-radius: 12px;
+  padding: 0.8em 0;
+  margin-top: 4px;
+}
+
+.skeletonStatItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Button skeletons ── */
+.skeletonBtns {
+  display: flex;
+  gap: 12px;
+  width: 90%;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.skeletonBtn {
+  width: 110px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+/* ── Social icons row skeleton ── */
+.skeletonSocialRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 90%;
+  background: var(--accent-light);
+  border-radius: 12px;
+  padding: 0.8em 1em;
+  gap: 12px;
+}
+
+.skeletonSocialIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Tab button skeletons ── */
+.skeletonTabBtn {
+  width: 80px;
+  height: 40px;
+  border-radius: 8px;
+  margin: 0 12px;
+}
+
+/* ── Post tile skeleton ── */
+.skeletonTile {
+  background: var(--accent-light);
+  cursor: default !important;
+}
+
+/* ── Override shimmer on skeletonTile so the gradient plays correctly ── */
+.postContainer .skeletonTile.shimmer,
+.cartContainer .skeletonTile.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--accent-light) 25%,
+    color-mix(in srgb, var(--accent-light) 60%, var(--bg-card)) 50%,
+    var(--accent-light) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
 
 /* ── Responsive ── */
 @media (max-width: 768px) {

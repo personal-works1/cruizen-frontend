@@ -962,6 +962,39 @@
 
 .transferBtn:hover { background: var(--accent-mid); }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   SKELETON / SHIMMER — append to Messages.css AND Cart.css
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--accent-light) 25%,
+    color-mix(in srgb, var(--accent-light) 60%, var(--bg-card)) 50%,
+    var(--accent-light) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+/* ── reusable skeleton primitives ── */
+.skelLine {
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.skelCircle {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .walletBanner {

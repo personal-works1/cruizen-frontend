@@ -16,13 +16,99 @@ import { API_URL } from "../Authentication/Authentication";
 import { useAuth } from "../Context/AuthContext";
 import PostCard from "../Home/PostCard";
 
-// ── CartCard — now uses real product data ─────────────────────────────────────
-function CartCard({ product }) {
-  const navigate = useNavigate()
-  if (!product) return null
+// ── Discover cache (5 min TTL — products/trending don't change by the second) ─
+const DISCOVER_CACHE_KEY = "search_discover_cache";
+const DISCOVER_TTL = 5 * 60_000;
+
+function getDiscoverCache() {
+  try {
+    const raw = sessionStorage.getItem(DISCOVER_CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > DISCOVER_TTL) { sessionStorage.removeItem(DISCOVER_CACHE_KEY); return null; }
+    return data;
+  } catch { return null; }
+}
+
+function setDiscoverCache(data) {
+  try {
+    sessionStorage.setItem(DISCOVER_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch {}
+}
+
+// ── Skeleton primitives ───────────────────────────────────────────────────────
+function SkelBox({ w = "100%", h = 14, radius = 6, style = {} }) {
   return (
-    <div className="cart-Card" onClick={() => navigate(`/product/${product.id}`)}
-      style={{ cursor: "pointer" }}>
+    <div
+      className="skelLine"
+      style={{ width: w, height: h, borderRadius: radius, ...style }}
+    />
+  );
+}
+
+// LuckyPick skeleton
+function LuckyPickSkeleton() {
+  return (
+    <div className="luckyPickContainer">
+      <SkelBox w="80px" h={16} style={{ marginBottom: 8 }} />
+      <div className="carouselWrapper">
+        <div style={{ width: 32, height: 32, borderRadius: "50%" }} className="skelLine" />
+        <div className="cart-Card" style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+            <div className="skelCircle" style={{ width: 24, height: 24 }} />
+            <SkelBox w="60%" h={12} />
+          </div>
+          <div className="skelLine" style={{ width: "100%", height: 120, borderRadius: 8 }} />
+          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 5 }}>
+            <SkelBox w="70%" h={13} />
+            <SkelBox w="40%" h={14} />
+            <SkelBox w="30%" h={11} />
+          </div>
+        </div>
+        <div style={{ width: 32, height: 32, borderRadius: "50%" }} className="skelLine" />
+      </div>
+    </div>
+  );
+}
+
+// VideosGrid skeleton
+function VideosGridSkeleton() {
+  return (
+    <div className="videosSection">
+      <SkelBox w="60px" h={16} style={{ marginBottom: 10 }} />
+      <div className="videosGrid">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="skelLine" style={{ borderRadius: 8, height: 120 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Trending skeleton
+function TrendingSkeleton() {
+  return (
+    <div className="trending-Section">
+      <SkelBox w="70px" h={16} style={{ marginBottom: 10 }} />
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="trendCard" style={{ gap: 8, pointerEvents: "none" }}>
+          <SkelBox w="90%" h={13} />
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <div className="skelCircle" style={{ width: 20, height: 20 }} />
+            <SkelBox w="50%" h={11} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── CartCard ──────────────────────────────────────────────────────────────────
+function CartCard({ product }) {
+  const navigate = useNavigate();
+  if (!product) return null;
+  return (
+    <div className="cart-Card" onClick={() => navigate(`/product/${product.id}`)} style={{ cursor: "pointer" }}>
       <div className="cartOwner">
         <UserAvatar avatar_url={product.avatar_url} size={24} />
         <div className="UserandRatings">
@@ -48,24 +134,24 @@ function CartCard({ product }) {
         <p className="UnitLeft">{product.units_left} units left</p>
       </div>
     </div>
-  )
+  );
 }
 
-// ── LuckyPick — now uses real products from DB ────────────────────────────────
-function LuckyPick({ products }) {
-  const [current, setCurrent] = useState(0)
-  const prev = () => setCurrent(i => (i === 0 ? products.length - 1 : i - 1))
-  const next = () => setCurrent(i => (i === products.length - 1 ? 0 : i + 1))
+// ── LuckyPick ─────────────────────────────────────────────────────────────────
+function LuckyPick({ products, loading }) {
+  const [current, setCurrent] = useState(0);
+  const prev = () => setCurrent(i => (i === 0 ? products.length - 1 : i - 1));
+  const next = () => setCurrent(i => (i === products.length - 1 ? 0 : i + 1));
+
+  if (loading) return <LuckyPickSkeleton />;
 
   if (!products || products.length === 0) return (
     <div className="luckyPickContainer">
       <h2 className="sectionTitle">Lucky Pick</h2>
-      <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
-        No products available yet.
-      </p>
+      <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>No products available yet.</p>
       <NavLink to="/Cart" className="seeMoreLink">See Marketplace →</NavLink>
     </div>
-  )
+  );
 
   return (
     <div className="luckyPickContainer">
@@ -74,7 +160,6 @@ function LuckyPick({ products }) {
         <button className="carouselBtn" onClick={prev}>
           <ArrowBackIosIcon sx={{ fontSize: 16 }} />
         </button>
-        {/* ── passing real product object ── */}
         <CartCard product={products[current]} />
         <button className="carouselBtn" onClick={next}>
           <ArrowForwardIosIcon sx={{ fontSize: 16 }} />
@@ -82,27 +167,28 @@ function LuckyPick({ products }) {
       </div>
       <NavLink to="/Cart" className="seeMoreLink">See more on Marketplace →</NavLink>
     </div>
-  )
+  );
 }
 
-// ── VideosGrid — improved player ──────────────────────────────────────────────
-function VideosGrid({ videos }) {
-  const navigate = useNavigate()
+// ── VideosGrid ────────────────────────────────────────────────────────────────
+function VideosGrid({ videos, loading }) {
+  const navigate = useNavigate();
+
+  if (loading) return <VideosGridSkeleton />;
 
   if (!videos || videos.length === 0) return (
     <div className="videosSection">
       <h2 className="sectionTitle">Videos</h2>
       <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>No videos yet.</p>
     </div>
-  )
+  );
 
   return (
     <div className="videosSection">
       <h2 className="sectionTitle">Videos</h2>
       <div className="videosGrid">
         {videos.map((v) => (
-          <div key={v.id} className="videoCard"
-            onClick={() => navigate(`/reels/${v.id}`)}>
+          <div key={v.id} className="videoCard" onClick={() => navigate(`/reels/${v.id}`)}>
             <video
               src={v.media_url}
               muted
@@ -118,23 +204,24 @@ function VideosGrid({ videos }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 // ── Trending ──────────────────────────────────────────────────────────────────
-function Trending({ items }) {
-  const navigate = useNavigate()
+function Trending({ items, loading }) {
+  const navigate = useNavigate();
+
+  if (loading) return <TrendingSkeleton />;
+
   return (
     <div className="trending-Section">
       <h2 className="sectionTitle">Trending</h2>
       {items.length === 0 && (
-        <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
-          Nothing trending yet.
-        </p>
+        <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>Nothing trending yet.</p>
       )}
       {items.map((item) => (
         <div key={item.id} className="trendCard"
-          onClick={() => navigate(`/post/${item.id}`)} // ← navigate to actual post
+          onClick={() => navigate(`/post/${item.id}`)}
           style={{ cursor: "pointer" }}>
           <p className="trendTitle">
             {item.post_text?.slice(0, 60)}{item.post_text?.length > 60 ? "..." : ""}
@@ -146,29 +233,29 @@ function Trending({ items }) {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
-// ── User Result Card ──────────────────────────────────────────────────────────
+// ── UserCard ──────────────────────────────────────────────────────────────────
 function UserCard({ user, authHeader, onFollowToggle }) {
-  const navigate = useNavigate()
-  const [pending, setPending] = useState(false)
+  const navigate = useNavigate();
+  const [pending, setPending] = useState(false);
 
   const handleFollow = async (e) => {
-    e.stopPropagation()
-      if (!user) return navigate("/auth") 
-    if (pending) return
-    setPending(true)
+    e.stopPropagation();
+    if (!user) return navigate("/auth");
+    if (pending) return;
+    setPending(true);
     try {
       if (user.is_following) {
-        await axios.delete(`${API_URL}/profile/${user.username}/follow`, { headers: authHeader })
+        await axios.delete(`${API_URL}/profile/${user.username}/follow`, { headers: authHeader });
       } else {
-        await axios.post(`${API_URL}/profile/${user.username}/follow`, {}, { headers: authHeader })
+        await axios.post(`${API_URL}/profile/${user.username}/follow`, {}, { headers: authHeader });
       }
-      onFollowToggle(user.id)
-    } catch (err) { console.error(err) }
-    finally { setPending(false) }
-  }
+      onFollowToggle(user.id);
+    } catch (err) { console.error(err); }
+    finally { setPending(false); }
+  };
 
   return (
     <div className="userResultCard" onClick={() => navigate(`/Profile/${user.username}`)}>
@@ -185,31 +272,29 @@ function UserCard({ user, authHeader, onFollowToggle }) {
         {user.is_following ? "Unfollow" : "Follow"}
       </button>
     </div>
-  )
+  );
 }
 
-// ── Dropdown ──────────────────────────────────────────────────────────────────
+// ── SearchDropdown ────────────────────────────────────────────────────────────
 function SearchDropdown({ results, query, onSelect, onClose }) {
-  const navigate  = useNavigate()
-  const { users, posts, trending, hashtags } = results
-  const hasResults = users?.length || posts?.length || trending?.length || hashtags?.length
+  const navigate = useNavigate();
+  const { users, posts, trending, hashtags } = results;
+  const hasResults = users?.length || posts?.length || trending?.length || hashtags?.length;
 
   if (!hasResults) return (
     <div className="searchDropdown">
       <p className="dropdownEmpty">No results for "<strong>{query}</strong>"</p>
     </div>
-  )
+  );
 
   return (
     <div className="searchDropdown">
       {users?.length > 0 && (
         <div className="dropdownSection">
-          <p className="dropdownLabel">
-            <AccountCircleIcon sx={{ fontSize: 14 }} /> People
-          </p>
+          <p className="dropdownLabel"><AccountCircleIcon sx={{ fontSize: 14 }} /> People</p>
           {users.map((u) => (
             <div key={u.id} className="dropdownItem"
-              onClick={() => { navigate(`/Profile/${u.username}`); onClose() }}>
+              onClick={() => { navigate(`/Profile/${u.username}`); onClose(); }}>
               <UserAvatar avatar_url={u.avatar_url} size={32} />
               <div className="dropdownItemText">
                 <strong>{u.name}</strong>
@@ -222,16 +307,12 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
 
       {hashtags?.length > 0 && (
         <div className="dropdownSection">
-          <p className="dropdownLabel">
-            <TagIcon sx={{ fontSize: 14 }} /> Hashtags
-          </p>
+          <p className="dropdownLabel"><TagIcon sx={{ fontSize: 14 }} /> Hashtags</p>
           {hashtags.map((h, i) => (
             <div key={i} className="dropdownItem"
-              onClick={() => { onSelect(h.tag); onClose() }}>
+              onClick={() => { onSelect(h.tag); onClose(); }}>
               <div className="dropdownHashIcon">#</div>
-              <div className="dropdownItemText">
-                <strong>{h.tag}</strong>
-              </div>
+              <div className="dropdownItemText"><strong>{h.tag}</strong></div>
             </div>
           ))}
         </div>
@@ -239,12 +320,10 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
 
       {trending?.length > 0 && (
         <div className="dropdownSection">
-          <p className="dropdownLabel">
-            <WhatshotIcon sx={{ fontSize: 14 }} /> Trending
-          </p>
+          <p className="dropdownLabel"><WhatshotIcon sx={{ fontSize: 14 }} /> Trending</p>
           {trending.map((t) => (
             <div key={t.id} className="dropdownItem"
-              onClick={() => { onSelect(t.post_text); onClose() }}>
+              onClick={() => { onSelect(t.post_text); onClose(); }}>
               <WhatshotIcon sx={{ fontSize: 28, color: "#ff6b35" }} />
               <div className="dropdownItemText">
                 <strong>{t.post_text?.slice(0, 50)}{t.post_text?.length > 50 ? "..." : ""}</strong>
@@ -257,12 +336,10 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
 
       {posts?.length > 0 && (
         <div className="dropdownSection">
-          <p className="dropdownLabel">
-            <ArticleOutlinedIcon sx={{ fontSize: 14 }} /> Posts
-          </p>
+          <p className="dropdownLabel"><ArticleOutlinedIcon sx={{ fontSize: 14 }} /> Posts</p>
           {posts.map((p) => (
             <div key={p.id} className="dropdownItem"
-              onClick={() => { onSelect(p.post_text); onClose() }}>
+              onClick={() => { onSelect(p.post_text); onClose(); }}>
               <ArticleOutlinedIcon sx={{ fontSize: 28, color: "var(--border)" }} />
               <div className="dropdownItemText">
                 <strong>{p.post_text?.slice(0, 50)}{p.post_text?.length > 50 ? "..." : ""}</strong>
@@ -273,170 +350,187 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ── Main Search ───────────────────────────────────────────────────────────────
 function Search() {
-  const { getValidToken, user } = useAuth()
-  const navigate          = useNavigate()
+  const { getValidToken, user } = useAuth();
+  const navigate = useNavigate();
 
-  const [query,        setQuery]        = useState("")
-  const [searching,    setSearching]    = useState(false)
-  const [showDropdown, setShowDropdown] = useState(false)
-  const [dropdown,     setDropdown]     = useState({})
-  const [users,        setUsers]        = useState([])
-  const [posts,        setPosts]        = useState([])
-  const [videos,       setVideos]       = useState([])
-  const [trending,     setTrending]     = useState([])
-  const [products,     setProducts]     = useState([]) // ← real products for lucky pick
-  const [hasSearched,  setHasSearched]  = useState(false)
+  const [query,        setQuery]        = useState("");
+  const [searching,    setSearching]    = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdown,     setDropdown]     = useState({});
+  const [users,        setUsers]        = useState([]);
+  const [posts,        setPosts]        = useState([]);
+  const [videos,       setVideos]       = useState([]);
+  const [trending,     setTrending]     = useState([]);
+  const [products,     setProducts]     = useState([]);
+  const [hasSearched,  setHasSearched]  = useState(false);
+  const [discoverLoading, setDiscoverLoading] = useState(true);
 
-  const debounceRef = useRef(null)
-  const wrapperRef  = useRef(null)
+  const debounceRef = useRef(null);
+  const wrapperRef  = useRef(null);
 
-  // ── load discover data + real products on mount ───────────────────────────
- useEffect(() => {
-  const fetchDiscover = async () => {
-    try {
-      let token = null
-      try { token = await getValidToken() } catch {}
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+  // ── discover + cache ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchDiscover = async () => {
+      // 1. show cache instantly
+      const cached = getDiscoverCache();
+      if (cached) {
+        setVideos(cached.videos);
+        setTrending(cached.trending);
+        setProducts(cached.products);
+        setDiscoverLoading(false);
+      }
 
-      const [discoverRes, productsRes, trendingRes] = await Promise.all([
-        axios.get(`${API_URL}/search/discover`, { headers }),
-        axios.get(`${API_URL}/products`, { headers }),
-        axios.get(`${API_URL}/posts/trending`, { headers }) // ← same as home
-      ])
+      // 2. revalidate in background
+      try {
+        let token = null;
+        try { token = await getValidToken(); } catch {}
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      setVideos(discoverRes.data.videos)
-      setTrending(trendingRes.data.trending_posts) // ← real trending
+        const [discoverRes, productsRes, trendingRes] = await Promise.all([
+          axios.get(`${API_URL}/search/discover`, { headers }),
+          axios.get(`${API_URL}/products`, { headers }),
+          axios.get(`${API_URL}/posts/trending`, { headers }),
+        ]);
 
-      const grouped = productsRes.data.products
-      const flat = Object.values(grouped).flat()
-      const shuffled = flat.sort(() => Math.random() - 0.5)
-      setProducts(shuffled)
+        const flat = Object.values(productsRes.data.products).flat().sort(() => Math.random() - 0.5);
+        const freshTrending = trendingRes.data.trending_posts;
 
-    } catch (err) { console.error(err) }
-  }
-  fetchDiscover()
-}, [])
+        setVideos(discoverRes.data.videos);
+        setTrending(freshTrending);
+        setProducts(flat);
+
+        setDiscoverCache({
+          videos: discoverRes.data.videos,
+          trending: freshTrending,
+          products: flat,
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setDiscoverLoading(false);
+      }
+    };
+    fetchDiscover();
+  }, []);
 
   // ── debounced autocomplete ─────────────────────────────────────────────────
- useEffect(() => {
-  if (!query.trim()) { setShowDropdown(false); setDropdown({}); return }
-  clearTimeout(debounceRef.current)
-  debounceRef.current = setTimeout(async () => {
-    try {
-      let token = null
-      try { token = await getValidToken() } catch {}
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
-      const res = await axios.get(
-        `${API_URL}/search/autocomplete?q=${encodeURIComponent(query)}`,
-        { headers }
-      )
-      setDropdown(res.data.results)
-      setShowDropdown(true)
-    } catch (err) { console.error(err) }
-  }, 300)
-  return () => clearTimeout(debounceRef.current)
-}, [query])
+  useEffect(() => {
+    if (!query.trim()) { setShowDropdown(false); setDropdown({}); return; }
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        let token = null;
+        try { token = await getValidToken(); } catch {}
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await axios.get(
+          `${API_URL}/search/autocomplete?q=${encodeURIComponent(query)}`,
+          { headers }
+        );
+        setDropdown(res.data.results);
+        setShowDropdown(true);
+      } catch (err) { console.error(err); }
+    }, 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [query]);
 
   // ── close dropdown on outside click ───────────────────────────────────────
   useEffect(() => {
     const handleClick = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        setShowDropdown(false)
+        setShowDropdown(false);
       }
-    }
-    document.addEventListener("mousedown", handleClick)
-    return () => document.removeEventListener("mousedown", handleClick)
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   // ── full search ────────────────────────────────────────────────────────────
   const handleSearch = async () => {
-     if (!user) return navigate("/auth") //I added this
-    if (!query.trim()) return
-    setShowDropdown(false)
-    setSearching(true)
+    if (!user) return navigate("/auth");
+    if (!query.trim()) return;
+    setShowDropdown(false);
+    setSearching(true);
     try {
-      const token = await getValidToken()
+      const token = await getValidToken();
       const res = await axios.get(
         `${API_URL}/search?q=${encodeURIComponent(query)}`,
         { headers: { Authorization: `Bearer ${token}` } }
-      )
-      setUsers(res.data.users)
-      setPosts(res.data.posts)
-      setVideos(res.data.videos)
-      setTrending(res.data.trending)
-      setHasSearched(true)
-    } catch (err) { console.error(err) }
-    finally { setSearching(false) }
-  }
+      );
+      setUsers(res.data.users);
+      setPosts(res.data.posts);
+      setVideos(res.data.videos);
+      setTrending(res.data.trending);
+      setHasSearched(true);
+    } catch (err) { console.error(err); }
+    finally { setSearching(false); }
+  };
 
   const handleFollowToggle = (userId) => {
-    setUsers((prev) => prev.map((u) =>
+    setUsers(prev => prev.map(u =>
       u.id === userId
-        ? { ...u, is_following: !u.is_following,
-            followers_count: u.is_following ? u.followers_count - 1 : u.followers_count + 1 }
+        ? { ...u, is_following: !u.is_following, followers_count: u.is_following ? u.followers_count - 1 : u.followers_count + 1 }
         : u
-    ))
-  }
+    ));
+  };
 
   const handleLikeToggle = async (post) => {
-     if (!user) return navigate("/auth")
-    const liked = post.liked_by_me
+    if (!user) return navigate("/auth");
+    const liked = post.liked_by_me;
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
+      const token = await getValidToken();
+      const headers = { Authorization: `Bearer ${token}` };
       liked
         ? await axios.delete(`${API_URL}/posts/${post.id}/like`, { headers })
-        : await axios.post(`${API_URL}/posts/${post.id}/like`, {}, { headers })
-      setPosts((prev) => prev.map((p) =>
+        : await axios.post(`${API_URL}/posts/${post.id}/like`, {}, { headers });
+      setPosts(prev => prev.map(p =>
         p.id === post.id
           ? { ...p, liked_by_me: !liked, likes_count: liked ? p.likes_count - 1 : p.likes_count + 1 }
           : p
-      ))
-    } catch (err) { console.error(err) }
-  }
+      ));
+    } catch (err) { console.error(err); }
+  };
 
   const handleRepostToggle = async (post) => {
-    const reposted = post.reposted_by_me
+    const reposted = post.reposted_by_me;
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
+      const token = await getValidToken();
+      const headers = { Authorization: `Bearer ${token}` };
       reposted
         ? await axios.delete(`${API_URL}/posts/${post.id}/repost`, { headers })
-        : await axios.post(`${API_URL}/posts/${post.id}/repost`, {}, { headers })
-      setPosts((prev) => prev.map((p) =>
+        : await axios.post(`${API_URL}/posts/${post.id}/repost`, {}, { headers });
+      setPosts(prev => prev.map(p =>
         p.id === post.id
           ? { ...p, reposted_by_me: !reposted, reposts_count: reposted ? p.reposts_count - 1 : p.reposts_count + 1 }
           : p
-      ))
-    } catch (err) { console.error(err) }
-  }
+      ));
+    } catch (err) { console.error(err); }
+  };
 
   const handleBookmarkToggle = async (post) => {
-    const bookmarked = post.bookmarked_by_me
+    const bookmarked = post.bookmarked_by_me;
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
+      const token = await getValidToken();
+      const headers = { Authorization: `Bearer ${token}` };
       bookmarked
         ? await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, { headers })
-        : await axios.post(`${API_URL}/posts/${post.id}/bookmark`, {}, { headers })
-      setPosts((prev) => prev.map((p) =>
+        : await axios.post(`${API_URL}/posts/${post.id}/bookmark`, {}, { headers });
+      setPosts(prev => prev.map(p =>
         p.id === post.id
           ? { ...p, bookmarked_by_me: !bookmarked, bookmarks_count: bookmarked ? p.bookmarks_count - 1 : p.bookmarks_count + 1 }
           : p
-      ))
-    } catch (err) { console.error(err) }
-  }
+      ));
+    } catch (err) { console.error(err); }
+  };
 
   return (
     <div className="searchGridContainer">
 
-      {/* ── Search Bar — filter panel removed ── */}
+      {/* ── Search Bar ── */}
       <div className="InputContainer">
         <div className="search-wrapper" ref={wrapperRef}>
           <div className="search-bar-row">
@@ -445,31 +539,29 @@ function Search() {
               placeholder="Search people, posts, hashtags..."
               className="main-input"
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setHasSearched(false) }}
+              onChange={(e) => { setQuery(e.target.value); setHasSearched(false); }}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               onFocus={() => query.trim() && setShowDropdown(true)}
               autoComplete="off"
             />
             {query && (
               <button className="clear-btn"
-                onClick={() => { setQuery(""); setShowDropdown(false); setHasSearched(false) }}>
+                onClick={() => { setQuery(""); setShowDropdown(false); setHasSearched(false); }}>
                 <CloseIcon sx={{ fontSize: 18 }} />
               </button>
             )}
             <button className="search-go" onClick={handleSearch} disabled={searching}>
               {searching
                 ? <span style={{ fontSize: 12 }}>...</span>
-                : <SearchSharpIcon sx={{ fontSize: 24 }} />
-              }
+                : <SearchSharpIcon sx={{ fontSize: 24 }} />}
             </button>
           </div>
 
-          {/* ── autocomplete dropdown ── */}
           {showDropdown && (
             <SearchDropdown
               results={dropdown}
               query={query}
-              onSelect={(text) => { setQuery(text); handleSearch() }}
+              onSelect={(text) => { setQuery(text); handleSearch(); }}
               onClose={() => setShowDropdown(false)}
             />
           )}
@@ -511,18 +603,17 @@ function Search() {
         </div>
       )}
 
-      {/* ── Default Discover ── */}
+      {/* ── Default Discover (skeletons until data arrives) ── */}
       {!hasSearched && (
         <>
-          {/* ── lucky pick now uses real products ── */}
-          <LuckyPick products={products} />
-          <VideosGrid videos={videos} />
-          <Trending items={trending} />
+          <LuckyPick products={products} loading={discoverLoading} />
+          <VideosGrid videos={videos}   loading={discoverLoading} />
+          <Trending   items={trending}  loading={discoverLoading} />
         </>
       )}
 
     </div>
-  )
+  );
 }
 
-export default Search
+export default Search;

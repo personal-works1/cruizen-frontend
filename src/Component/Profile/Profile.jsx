@@ -26,6 +26,76 @@ import PostCard from "../Home/PostCard";
 import TrustCard from "./TrustCard";
 import WinnerBadge from "../Leaderboard/WinnerBadge";
 
+// ── Profile cache (2-min TTL, keyed by username) ──────────────────────────────
+const profileCache = new Map();
+const PROFILE_CACHE_TTL = 2 * 60 * 1000;
+
+function getCachedProfile(username) {
+  const entry = profileCache.get(username);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > PROFILE_CACHE_TTL) {
+    profileCache.delete(username);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCachedProfile(username, data) {
+  profileCache.set(username, { data, timestamp: Date.now() });
+}
+
+function clearProfileCache(username) {
+  profileCache.delete(username);
+}
+
+// ── Skeleton components ───────────────────────────────────────────────────────
+function ProfileHeaderSkeleton() {
+  return (
+    <div className="profileHeaderSkeleton">
+      {/* Avatar */}
+      <div className="skeletonAvatar shimmer" />
+
+      {/* Username + name lines */}
+      <div className="skeletonLine shimmer" style={{ width: "120px", height: "18px", marginTop: "12px" }} />
+      <div className="skeletonLine shimmer" style={{ width: "90px", height: "14px" }} />
+      <div className="skeletonLine shimmer" style={{ width: "160px", height: "12px" }} />
+
+      {/* Stats bar */}
+      <div className="skeletonStatsBar">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="skeletonStatItem">
+            <div className="skeletonLine shimmer" style={{ width: "40px", height: "18px" }} />
+            <div className="skeletonLine shimmer" style={{ width: "55px", height: "12px" }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Buttons */}
+      <div className="skeletonBtns">
+        <div className="skeletonBtn shimmer" />
+        <div className="skeletonBtn shimmer" />
+      </div>
+
+      {/* Social icons row */}
+      <div className="skeletonSocialRow">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="skeletonSocialIcon shimmer" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PostGridSkeleton({ count = 9 }) {
+  return (
+    <div className="postContainer">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="postItem skeletonTile shimmer" />
+      ))}
+    </div>
+  );
+}
+
 // ── Social Icons Block ────────────────────────────────────────────────────────
 function SocialLinks({ data }) {
   if (!data) return null;
@@ -137,32 +207,22 @@ function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (isBusinessView) {
-        // ── save vendor profile ───────────────────────────────────────
         const res = await axios.put(`${API_URL}/vendors/update`, {
           business_name:        form.name,
           business_description: form.bio,
         }, { headers });
-
-        // ── save vendor social links ──────────────────────────────────
         await axios.put(`${API_URL}/vendors/social-links`, socialPayload, { headers });
-
         onSave({ ...res.data.vendor, ...socialPayload });
-
       } else {
-        // ── save personal profile ─────────────────────────────────────
         const res = await axios.put(`${API_URL}/profile/update/me`, {
           name:     form.name,
           bio:      form.bio,
           location: form.location,
           website:  form.website,
         }, { headers });
-
-        // ── save personal social links ────────────────────────────────
         await axios.put(`${API_URL}/profile/social-links`, socialPayload, { headers });
-
         onSave({ ...res.data.user, ...socialPayload });
       }
-      
 
       onClose();
     } catch (err) {
@@ -202,31 +262,19 @@ function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
           />
         </div>
 
-        {/* personal only fields */}
         {!isBusinessView && (
           <>
             <div className="field">
               <label>Location</label>
-              <input
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-                placeholder="e.g. Lagos, Nigeria"
-              />
+              <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Lagos, Nigeria" />
             </div>
             <div className="field">
               <label>Website</label>
-              <input
-                name="website"
-                value={form.website}
-                onChange={handleChange}
-                placeholder="https://yoursite.com"
-              />
+              <input name="website" value={form.website} onChange={handleChange} placeholder="https://yoursite.com" />
             </div>
           </>
         )}
 
-        {/* social links — same for both modes */}
         <div style={{
           borderTop: "1px solid var(--border)",
           margin: "12px 0 8px",
@@ -239,59 +287,34 @@ function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
         </div>
 
         {[
-          { name: "whatsapp",  label: "WhatsApp",  placeholder: "https://wa.me/234..." },
-          { name: "instagram", label: "Instagram", placeholder: "https://instagram.com/..." },
-          { name: "tiktok",    label: "TikTok",    placeholder: "https://tiktok.com/@..." },
-          { name: "youtube",   label: "YouTube",   placeholder: "https://youtube.com/..." },
-          { name: "x_twitter", label: "X (Twitter)", placeholder: "https://x.com/..." },
-          { name: "spotify",   label: "Spotify",   placeholder: "https://open.spotify.com/..." },
+          { name: "whatsapp",  label: "WhatsApp",     placeholder: "https://wa.me/234..." },
+          { name: "instagram", label: "Instagram",    placeholder: "https://instagram.com/..." },
+          { name: "tiktok",    label: "TikTok",       placeholder: "https://tiktok.com/@..." },
+          { name: "youtube",   label: "YouTube",      placeholder: "https://youtube.com/..." },
+          { name: "x_twitter", label: "X (Twitter)",  placeholder: "https://x.com/..." },
+          { name: "spotify",   label: "Spotify",      placeholder: "https://open.spotify.com/..." },
         ].map(({ name, label, placeholder }) => (
           <div className="field" key={name}>
             <label>{label}</label>
-            <input
-              name={name}
-              value={form[name]}
-              onChange={handleChange}
-              placeholder={placeholder}
-            />
+            <input name={name} value={form[name]} onChange={handleChange} placeholder={placeholder} />
           </div>
         ))}
 
         <div className="field">
           <label>Other Link 1 — Label</label>
-          <input
-            name="other_1_label"
-            value={form.other_1_label}
-            onChange={handleChange}
-            placeholder="e.g. My Podcast"
-          />
+          <input name="other_1_label" value={form.other_1_label} onChange={handleChange} placeholder="e.g. My Podcast" />
         </div>
         <div className="field">
           <label>Other Link 1 — URL</label>
-          <input
-            name="other_1_url"
-            value={form.other_1_url}
-            onChange={handleChange}
-            placeholder="https://..."
-          />
+          <input name="other_1_url" value={form.other_1_url} onChange={handleChange} placeholder="https://..." />
         </div>
         <div className="field">
           <label>Other Link 2 — Label</label>
-          <input
-            name="other_2_label"
-            value={form.other_2_label}
-            onChange={handleChange}
-            placeholder="e.g. My Linktree"
-          />
+          <input name="other_2_label" value={form.other_2_label} onChange={handleChange} placeholder="e.g. My Linktree" />
         </div>
         <div className="field">
           <label>Other Link 2 — URL</label>
-          <input
-            name="other_2_url"
-            value={form.other_2_url}
-            onChange={handleChange}
-            placeholder="https://..."
-          />
+          <input name="other_2_url" value={form.other_2_url} onChange={handleChange} placeholder="https://..." />
         </div>
 
         {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
@@ -330,8 +353,7 @@ function CartGrid({ isOwnProfile, isVendor }) {
     else setLoading(false);
   }, []);
 
-  if (loading)
-    return <p style={{ textAlign: "center", padding: "2rem", color: "#888" }}>Loading...</p>;
+  if (loading) return <PostGridSkeleton count={6} />;
 
   return (
     <div className="cartContainer">
@@ -370,18 +392,18 @@ function Profile() {
   const { token, user: me, login, getValidToken, loading: authLoading } = useAuth();
   const { mode, activeIdentity, vendorProfile, setVendorProfile, switchMode } = useMode();
 
-  const [profileData, setProfileData]       = useState(null);
-  const [posts, setPosts]                   = useState([]);
-  const [reposts, setReposts]               = useState([]);
-  const [liked, setLiked]                   = useState([]);
-  const [loading, setLoading]               = useState(true);
-  const [tabLoading, setTabLoading]         = useState(false);
-  const [activeTab, setActiveTab]           = useState("posts");
-  const [followPending, setFollowPending]   = useState(false);
-  const [badges, setBadges] = useState([])
-  const [showEditModal, setShowEditModal]   = useState(false);
+  const [profileData, setProfileData]         = useState(null);
+  const [posts, setPosts]                     = useState([]);
+  const [reposts, setReposts]                 = useState([]);
+  const [liked, setLiked]                     = useState([]);
+  const [loading, setLoading]                 = useState(true);
+  const [tabLoading, setTabLoading]           = useState(false);
+  const [activeTab, setActiveTab]             = useState("posts");
+  const [followPending, setFollowPending]     = useState(false);
+  const [badges, setBadges]                   = useState([]);
+  const [showEditModal, setShowEditModal]     = useState(false);
   const [showVendorModal, setShowVendorModal] = useState(false);
-  const [selectedPost, setSelectedPost]     = useState(null);
+  const [selectedPost, setSelectedPost]       = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
   const [vendorForm, setVendorForm] = useState({
@@ -399,34 +421,57 @@ function Profile() {
   const displayAvatar   = isBusinessView && vendorProfile?.avatar_url ? vendorProfile.avatar_url : profileData?.avatar_url;
   const displayBio      = isBusinessView && vendorProfile ? vendorProfile.business_category  : profileData?.bio;
 
-  // ── Fetch profile ─────────────────────────────────────────────────────
+  // ── Fetch profile (with cache) ────────────────────────────────────────
   useEffect(() => {
     if (!targetUsername || authLoading) return;
+
     const fetchProfile = async () => {
+      // Check cache first
+      const cached = getCachedProfile(targetUsername);
+      if (cached) {
+        setProfileData(cached.user);
+        setPosts(cached.posts);
+        setBadges(cached.badges || []);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const freshToken = await getValidToken();
         if (!freshToken) return;
-        const res = await axios.get(`${API_URL}/profile/${targetUsername}`, {
-          headers: { Authorization: `Bearer ${freshToken}` },
+        const headers = { Authorization: `Bearer ${freshToken}` };
+
+        const res = await axios.get(`${API_URL}/profile/${targetUsername}`, { headers });
+        const { user, posts: fetchedPosts } = res.data;
+
+        let fetchedBadges = [];
+        if (user?.id) {
+          try {
+            const badgeRes = await axios.get(
+              `${API_URL}/leaderboard/badges/${user.id}`, { headers }
+            );
+            fetchedBadges = badgeRes.data.badges;
+          } catch {}
+        }
+
+        // Store in cache
+        setCachedProfile(targetUsername, {
+          user,
+          posts: fetchedPosts,
+          badges: fetchedBadges,
         });
-        setProfileData(res.data.user);
-        if (res.data.user?.id) {
-  try {
-    const badgeRes = await axios.get(
-      `${API_URL}/leaderboard/badges/${res.data.user.id}`,
-      { headers: { Authorization: `Bearer ${freshToken}` } }
-    )
-    setBadges(badgeRes.data.badges)
-  } catch {}
-}
-        setPosts(res.data.posts);
+
+        setProfileData(user);
+        setPosts(fetchedPosts);
+        setBadges(fetchedBadges);
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProfile();
   }, [targetUsername, authLoading]);
 
@@ -457,43 +502,49 @@ function Profile() {
 
   // ── Follow / Unfollow ─────────────────────────────────────────────────
   const handleFollowToggle = async () => {
-  if (!me) return navigate("/auth")
-  if (followPending) return
-  setFollowPending(true)
-  const isFollowing = profileData.is_following
+    if (!me) return navigate("/auth");
+    if (followPending) return;
+    setFollowPending(true);
+    const isFollowing = profileData.is_following;
 
-  try {
-    const freshToken = await getValidToken()  // ← always fresh
-    const headers = { Authorization: `Bearer ${freshToken}` }
-
-    if (isFollowing) {
-      await axios.delete(`${API_URL}/profile/${profileData.username}/follow`, { headers })
-    } else {
-      await axios.post(`${API_URL}/profile/${profileData.username}/follow`, {}, { headers })
-    }
-
+    // Optimistic update
     setProfileData((prev) => ({
       ...prev,
       is_following: !isFollowing,
       followers_count: isFollowing ? prev.followers_count - 1 : prev.followers_count + 1,
-    }))
-  } catch (err) {
-    console.error(err)
-  } finally {
-    setFollowPending(false)
-  }
-}
+    }));
+    // Clear cache so next visit reflects real state
+    clearProfileCache(targetUsername);
+
+    try {
+      const freshToken = await getValidToken();
+      const headers = { Authorization: `Bearer ${freshToken}` };
+      if (isFollowing) {
+        await axios.delete(`${API_URL}/profile/${profileData.username}/follow`, { headers });
+      } else {
+        await axios.post(`${API_URL}/profile/${profileData.username}/follow`, {}, { headers });
+      }
+    } catch (err) {
+      // Rollback on failure
+      setProfileData((prev) => ({
+        ...prev,
+        is_following: isFollowing,
+        followers_count: isFollowing ? prev.followers_count + 1 : prev.followers_count - 1,
+      }));
+      console.error(err);
+    } finally {
+      setFollowPending(false);
+    }
+  };
+
   // ── Profile saved callback ────────────────────────────────────────────
   const handleProfileSaved = (updatedData) => {
+    clearProfileCache(targetUsername);
     if (isBusinessView) {
-      // update vendorProfile in ModeContext — includes social links
       setVendorProfile((prev) => ({ ...prev, ...updatedData }));
     } else {
-      // update personal profile data + auth context
       setProfileData((prev) => ({ ...prev, ...updatedData }));
-       if (me) {
-      login(token, { ...me, ...updatedData })
-       }
+      if (me) login(token, { ...me, ...updatedData });
     }
   };
 
@@ -502,6 +553,7 @@ function Profile() {
     const file = e.target.files[0];
     if (!file) return;
     setAvatarUploading(true);
+    clearProfileCache(targetUsername);
     try {
       const formData = new FormData();
       formData.append("avatar", file);
@@ -530,6 +582,7 @@ function Profile() {
   // ── Avatar delete ─────────────────────────────────────────────────────
   const handleAvatarDelete = async () => {
     if (!window.confirm("Remove profile picture?")) return;
+    clearProfileCache(targetUsername);
     try {
       if (isBusinessView) {
         const tok = await getValidToken();
@@ -613,17 +666,14 @@ function Profile() {
   };
 
   // ── Message ───────────────────────────────────────────────────────────
-// in profile page handleMessage
-const handleMessage = async () => {
-  if (!token) { navigate("/usersignIn"); return; }
-  try {
-    const res = await axios.post(`${API_URL}/messages/conversation`,
-      { user2: profileData.id }, { headers: authHeader });
-    navigate("/messages", { 
-      state: { openConversation: res.data.conversation } 
-    })
-  } catch (err) { console.error(err); }
-}
+  const handleMessage = async () => {
+    if (!token) { navigate("/usersignIn"); return; }
+    try {
+      const res = await axios.post(`${API_URL}/messages/conversation`,
+        { user2: profileData.id }, { headers: authHeader });
+      navigate("/messages", { state: { openConversation: res.data.conversation } });
+    } catch (err) { console.error(err); }
+  };
 
   // ── Post grid render helper ───────────────────────────────────────────
   const renderPostGrid = (items, emptyMsg) => (
@@ -652,8 +702,29 @@ const handleMessage = async () => {
     </div>
   );
 
-  if (loading)
-    return <p style={{ textAlign: "center", marginTop: "2rem" }}>Loading profile...</p>;
+  // ── Loading state: full skeleton ──────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="profileMain">
+        {/* Left panel skeleton */}
+        <div className="userProfileInfo">
+          <ProfileHeaderSkeleton />
+        </div>
+
+        {/* Right panel skeleton */}
+        <div className="postORcart">
+          {/* Tabs skeleton */}
+          <div className="pages">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="skeletonTabBtn shimmer" />
+            ))}
+          </div>
+          <PostGridSkeleton count={9} />
+        </div>
+      </div>
+    );
+  }
+
   if (!profileData)
     return <p style={{ textAlign: "center", marginTop: "2rem" }}>User not found.</p>;
 
@@ -758,8 +829,7 @@ const handleMessage = async () => {
                 disabled={followPending}
               >
                 {profileData.is_following ? "Unfollow" : "Follow"}
-                {console.log(profileData.is_following)}
-              </button>    
+              </button>
             )}
 
             {!isOwnProfile && (
@@ -780,13 +850,11 @@ const handleMessage = async () => {
             )}
           </div>
 
-          {/* ── Social links — personal ── */}
+          {/* ── Social links ── */}
           {!isBusinessView && <SocialLinks data={profileData} />}
-
-          {/* ── Social links — business ── */}
           {isBusinessView && <SocialLinks data={vendorProfile} />}
 
-          {/* ── Show on profile toggle — business mode owner only ── */}
+          {/* ── Show on profile toggle ── */}
           {isOwnProfile && isBusinessView && vendorProfile && (
             <div style={{
               display: "flex", alignItems: "center", gap: "8px",
@@ -810,14 +878,14 @@ const handleMessage = async () => {
             </div>
           )}
 
-          {/* ── Trust card — business mode owner only ── */}
+          {/* ── Trust card ── */}
           {isOwnProfile &&
             (profileData.role === "vendor" || profileData.role === "both") &&
             mode === "business" && (
               <TrustCard username={profileData.username} />
             )}
 
-          {/* ── Visit Shop button — other users viewing a vendor ── */}
+          {/* ── Visit Shop button ── */}
           {!isOwnProfile &&
             (profileData.role === "vendor" || profileData.role === "both") &&
             profileData.show_on_profile && (
@@ -862,12 +930,11 @@ const handleMessage = async () => {
             )}
           </div>
 
-          {tabLoading && (
-            <p style={{ textAlign: "center", padding: "2rem", color: "#888" }}>Loading...</p>
-          )}
+          {/* Tab content — skeleton while loading, real content when ready */}
+          {tabLoading && <PostGridSkeleton count={9} />}
 
-          {!tabLoading && activeTab === "posts"   && renderPostGrid(posts,   "No posts yet.")}
-          {!tabLoading && activeTab === "reposts" && renderPostGrid(reposts, "No reposts yet.")}
+          {!tabLoading && activeTab === "posts"    && renderPostGrid(posts,   "No posts yet.")}
+          {!tabLoading && activeTab === "reposts"  && renderPostGrid(reposts, "No reposts yet.")}
           {!tabLoading && activeTab === "liked" && isOwnProfile && renderPostGrid(liked, "No liked posts yet.")}
           {!tabLoading && activeTab === "products" && isBusinessView && (
             <CartGrid isOwnProfile={isOwnProfile} isVendor={true} />

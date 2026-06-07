@@ -16,92 +16,143 @@ import { API_URL } from "../Authentication/Authentication"
 import "./Reels.css"
 
 // ── Single Reel ───────────────────────────────────────────────────────────────
+// Bug #1 + #3 fix: isActive drives play/pause; IntersectionObserver in the
+// parent sets activeIndex, so only the visible reel ever plays.
 function ReelItem({ video, index, isActive, muted, onMuteToggle, onLike, onRepost, onBookmark, onFollow }) {
   const videoRef = useRef(null)
   const navigate = useNavigate()
   const { user: me } = useAuth()
   const [paused, setPaused] = useState(false)
 
-const handleVideoTap = () => {
-  if (!videoRef.current) return
-  if (videoRef.current.paused) {
-    videoRef.current.play()
-    setPaused(false)
-  } else {
-    videoRef.current.pause()
-    setPaused(true)
-  }
-}
-
+  // ── Bug #1 + #3: play/pause entirely driven by isActive ─────────────────
   useEffect(() => {
-    if (!videoRef.current) return
+    const vid = videoRef.current
+    if (!vid) return
     if (isActive) {
-      videoRef.current.play().catch(() => {})
+      // reset manual-pause state when reel becomes active
+      setPaused(false)
+      vid.play().catch(() => {})
     } else {
-      videoRef.current.pause()
-      videoRef.current.currentTime = 0
+      // Bug #3: pause + reset any reel that scrolls out of view
+      vid.pause()
+      vid.currentTime = 0
     }
   }, [isActive])
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = muted
-    }
+    if (videoRef.current) videoRef.current.muted = muted
   }, [muted])
 
- return (
-  <div className="reelItem" data-index={index}>
-    <video
-      ref={videoRef}
-      src={video.media_url}
-      loop
-      playsInline
-      muted={muted}
-      onClick={handleVideoTap}
-      className="reelVideo"
-    />
-    {paused && (
-  <div style={{
-    position: "absolute",
-    top: "50%", left: "50%",
-    transform: "translate(-50%, -50%)",
-    background: "rgba(0,0,0,0.5)",
-    borderRadius: "50%",
-    width: 64, height: 64,
-    display: "flex", alignItems: "center", justifyContent: "center",
-    pointerEvents: "none", zIndex: 20
-  }}>
-    <span style={{ color: "#fff", fontSize: 28 }}>▐▐</span>
-  </div>
-)}
+  const handleVideoTap = () => {
+    const vid = videoRef.current
+    if (!vid) return
+    // only allow manual pause/resume on the active reel
+    if (!isActive) return
+    if (vid.paused) {
+      vid.play().catch(() => {})
+      setPaused(false)
+    } else {
+      vid.pause()
+      setPaused(true)
+    }
+  }
 
-    {/* ── MOBILE ONLY: everything floats on video ── */}
-    <div className="reelMobileOverlay">
-      <div className="reelOverlay">
-        {/* mobile overlay user info */}
-<div className="reelUserInfo"
-  onClick={() => navigate(`/profile/${video.username}`)}>
-  <UserAvatar avatar_url={video.avatar_url} size={36} />
-  <div>
-    <p className="reelUsername">@{video.username}</p>
-    {video.post_text && (
-      <p className="reelCaption">
-        {video.post_text?.slice(0, 60)}
-        {video.post_text?.length > 60 ? "..." : ""}
-      </p>
-    )}
-    {video.user_id !== me?.id && !video.is_following && (
-      <button className="reelFollowBtn" onClick={(e) => {
-        e.stopPropagation()
-        onFollow(video)
-      }}>Follow</button>
-    )}
-  </div>
-</div>
+  return (
+    <div className="reelItem" data-index={index}>
+      <video
+        ref={videoRef}
+        src={video.media_url}
+        loop
+        playsInline
+        muted={muted}
+        onClick={handleVideoTap}
+        className="reelVideo"
+      />
+
+      {paused && (
+        <div style={{
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "rgba(0,0,0,0.5)",
+          borderRadius: "50%",
+          width: 64, height: 64,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          pointerEvents: "none", zIndex: 20
+        }}>
+          <span style={{ color: "#fff", fontSize: 28 }}>▐▐</span>
+        </div>
+      )}
+
+      {/* ── MOBILE ONLY: everything floats on video ── */}
+      <div className="reelMobileOverlay">
+        <div className="reelOverlay">
+          <div className="reelUserInfo" onClick={() => navigate(`/profile/${video.username}`)}>
+            <UserAvatar avatar_url={video.avatar_url} size={36} />
+            <div>
+              <p className="reelUsername">@{video.username}</p>
+              {video.post_text && (
+                <p className="reelCaption">
+                  {video.post_text?.slice(0, 60)}{video.post_text?.length > 60 ? "..." : ""}
+                </p>
+              )}
+              {video.user_id !== me?.id && !video.is_following && (
+                <button className="reelFollowBtn" onClick={(e) => { e.stopPropagation(); onFollow(video) }}>
+                  Follow
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="reelActions">
+          <button className="reelActionBtn" onClick={onMuteToggle}>
+            {muted ? <VolumeOffIcon sx={{ fontSize: 26 }} /> : <VolumeUpIcon sx={{ fontSize: 26 }} />}
+          </button>
+          <button className="reelActionBtn" onClick={() => onLike(video)}>
+            {video.liked_by_me
+              ? <FavoriteIcon sx={{ fontSize: 28, color: "#ff4b4b" }} />
+              : <FavoriteBorderIcon sx={{ fontSize: 28, color: "#fff" }} />}
+            <span className="reelActionCount">{video.likes_count}</span>
+          </button>
+          <button className="reelActionBtn" onClick={() => navigate(`/post/${video.id}?comments=open`)}>
+            <ChatBubbleOutlineIcon sx={{ fontSize: 26, color: "#fff" }} />
+            <span className="reelActionCount">{video.comments_count}</span>
+          </button>
+          <button className="reelActionBtn" onClick={() => onRepost(video)}>
+            <RepeatIcon sx={{ fontSize: 26, color: video.reposted_by_me ? "#17bf63" : "#fff" }} />
+            <span className="reelActionCount">{video.reposts_count}</span>
+          </button>
+          <button className="reelActionBtn" onClick={() => onBookmark(video)}>
+            {video.bookmarked_by_me
+              ? <BookmarkIcon sx={{ fontSize: 26, color: "#61027b" }} />
+              : <BookmarkBorderIcon sx={{ fontSize: 26, color: "#fff" }} />}
+          </button>
+        </div>
       </div>
-      <div className="reelActions">
+
+      {/* ── DESKTOP ONLY ── */}
+      <div className="reelDesktopLeft">
+        <div className="reelDesktopUser" onClick={() => navigate(`/profile/${video.username}`)}>
+          <UserAvatar avatar_url={video.avatar_url} size={44} />
+          <div>
+            <p className="reelUsername">@{video.username}</p>
+            {video.post_text && (
+              <p className="reelCaption">
+                {video.post_text?.slice(0, 60)}{video.post_text?.length > 60 ? "..." : ""}
+              </p>
+            )}
+            {video.user_id !== me?.id && !video.is_following && (
+              <button className="reelFollowBtn" onClick={(e) => { e.stopPropagation(); onFollow(video) }}>
+                Follow
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="reelDesktopRight">
         <button className="reelActionBtn" onClick={onMuteToggle}>
-          {muted ? <VolumeOffIcon sx={{ fontSize: 26 }} /> : <VolumeUpIcon sx={{ fontSize: 26 }} />}
+          {muted ? <VolumeOffIcon sx={{ fontSize: 26, color: "#fff" }} /> : <VolumeUpIcon sx={{ fontSize: 26, color: "#fff" }} />}
         </button>
         <button className="reelActionBtn" onClick={() => onLike(video)}>
           {video.liked_by_me
@@ -109,8 +160,7 @@ const handleVideoTap = () => {
             : <FavoriteBorderIcon sx={{ fontSize: 28, color: "#fff" }} />}
           <span className="reelActionCount">{video.likes_count}</span>
         </button>
-        <button className="reelActionBtn"
-          onClick={() => navigate(`/post/${video.id}?comments=open`)}>
+        <button className="reelActionBtn" onClick={() => navigate(`/post/${video.id}?comments=open`)}>
           <ChatBubbleOutlineIcon sx={{ fontSize: 26, color: "#fff" }} />
           <span className="reelActionCount">{video.comments_count}</span>
         </button>
@@ -125,77 +175,29 @@ const handleVideoTap = () => {
         </button>
       </div>
     </div>
-
-   
-{/* ── DESKTOP ONLY ── */}
-<div className="reelDesktopLeft">
-  <div className="reelDesktopUser"
-    onClick={() => navigate(`/profile/${video.username}`)}>
-    <UserAvatar avatar_url={video.avatar_url} size={44} />
-    <div>
-      <p className="reelUsername">@{video.username}</p>
-      {video.post_text && (
-        <p className="reelCaption">
-          {video.post_text?.slice(0, 60)}
-          {video.post_text?.length > 60 ? "..." : ""}
-        </p>
-      )}
-      {video.user_id !== me?.id && !video.is_following && (
-        <button className="reelFollowBtn" onClick={(e) => {
-          e.stopPropagation()
-          onFollow(video)
-        }}>Follow</button>
-      )}
-    </div>
-  </div>
-</div>
-
-<div className="reelDesktopRight">
-  <button className="reelActionBtn" onClick={onMuteToggle}>
-    {muted ? <VolumeOffIcon sx={{ fontSize: 26, color: "#fff" }} /> : <VolumeUpIcon sx={{ fontSize: 26, color: "#fff" }} />}
-  </button>
-  <button className="reelActionBtn" onClick={() => onLike(video)}>
-    {video.liked_by_me
-      ? <FavoriteIcon sx={{ fontSize: 28, color: "#ff4b4b" }} />
-      : <FavoriteBorderIcon sx={{ fontSize: 28, color: "#fff" }} />}
-    <span className="reelActionCount">{video.likes_count}</span>
-  </button>
-  <button className="reelActionBtn"
-    onClick={() => navigate(`/post/${video.id}?comments=open`)}>
-    <ChatBubbleOutlineIcon sx={{ fontSize: 26, color: "#fff" }} />
-    <span className="reelActionCount">{video.comments_count}</span>
-  </button>
-  <button className="reelActionBtn" onClick={() => onRepost(video)}>
-    <RepeatIcon sx={{ fontSize: 26, color: video.reposted_by_me ? "#17bf63" : "#fff" }} />
-    <span className="reelActionCount">{video.reposts_count}</span>
-  </button>
-  <button className="reelActionBtn" onClick={() => onBookmark(video)}>
-    {video.bookmarked_by_me
-      ? <BookmarkIcon sx={{ fontSize: 26, color: "#61027b" }} />
-      : <BookmarkBorderIcon sx={{ fontSize: 26, color: "#fff" }} />}
-  </button>
-</div>
-  </div>
-)
+  )
 }
 
 // ── Reels Page ────────────────────────────────────────────────────────────────
 function Reels() {
-  const { postId }              = useParams()
-  const navigate                = useNavigate()
-  const { getValidToken }       = useAuth()
+  const { postId }        = useParams()
+  const navigate          = useNavigate()
+  const { getValidToken } = useAuth()
 
   const [videos,      setVideos]      = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
   const [muted,       setMuted]       = useState(false)
   const [loading,     setLoading]     = useState(true)
 
+  // Bug #1 + #3 fix: observer must be rooted to the scrolling container,
+  // not the document — otherwise threshold calculations are wrong and
+  // multiple reels can appear "intersecting" at once.
   const containerRef = useRef(null)
   const observerRef  = useRef(null)
 
-  // ── fetch videos ──────────────────────────────────────────────────────
+  // ── fetch ─────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const fetch = async () => {
+    const load = async () => {
       try {
         const token = await getValidToken()
         const res = await axios.get(
@@ -209,32 +211,41 @@ function Reels() {
         setLoading(false)
       }
     }
-    fetch()
+    load()
   }, [postId])
 
-  // ── intersection observer — detect which reel is active ──────────────
+  // ── IntersectionObserver — rooted to the scroll container ────────────────
+  // Bug #1: threshold 0.7 means a reel must be 70 % visible before it's
+  // considered "active". Only one reel can be 70 % visible at a time in a
+  // full-viewport snap scroller, so this naturally enforces one-video-at-a-time.
+  // Bug #3: when a reel drops below 70 % (scroll away), isActive becomes false
+  // in ReelItem and the useEffect pauses + resets it immediately.
   useEffect(() => {
-    if (!videos.length) return
+    if (!videos.length || !containerRef.current) return
+
+    observerRef.current?.disconnect()
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const index = Number(entry.target.dataset.index)
-            setActiveIndex(index)
+            setActiveIndex(Number(entry.target.dataset.index))
           }
         })
       },
-      { threshold: 0.7 }
+      {
+        root: containerRef.current, // ← scoped to the scroll container
+        threshold: 0.7,
+      }
     )
 
-    const items = containerRef.current?.querySelectorAll(".reelItem")
-    items?.forEach((item) => observerRef.current.observe(item))
+    const items = containerRef.current.querySelectorAll(".reelItem")
+    items.forEach((item) => observerRef.current.observe(item))
 
     return () => observerRef.current?.disconnect()
   }, [videos])
 
-  // ── like ──────────────────────────────────────────────────────────────
+  // ── engagement handlers ───────────────────────────────────────────────────
   const handleLike = async (video) => {
     const liked = video.liked_by_me
     try {
@@ -243,7 +254,7 @@ function Reels() {
       liked
         ? await axios.delete(`${API_URL}/posts/${video.id}/like`, { headers })
         : await axios.post(`${API_URL}/posts/${video.id}/like`, {}, { headers })
-      setVideos((prev) => prev.map((v) =>
+      setVideos(prev => prev.map(v =>
         v.id === video.id
           ? { ...v, liked_by_me: !liked, likes_count: liked ? v.likes_count - 1 : v.likes_count + 1 }
           : v
@@ -251,7 +262,6 @@ function Reels() {
     } catch (err) { console.error(err) }
   }
 
-  // ── repost ────────────────────────────────────────────────────────────
   const handleRepost = async (video) => {
     const reposted = video.reposted_by_me
     try {
@@ -260,7 +270,7 @@ function Reels() {
       reposted
         ? await axios.delete(`${API_URL}/posts/${video.id}/repost`, { headers })
         : await axios.post(`${API_URL}/posts/${video.id}/repost`, {}, { headers })
-      setVideos((prev) => prev.map((v) =>
+      setVideos(prev => prev.map(v =>
         v.id === video.id
           ? { ...v, reposted_by_me: !reposted, reposts_count: reposted ? v.reposts_count - 1 : v.reposts_count + 1 }
           : v
@@ -268,7 +278,6 @@ function Reels() {
     } catch (err) { console.error(err) }
   }
 
-  // ── bookmark ──────────────────────────────────────────────────────────
   const handleBookmark = async (video) => {
     const bookmarked = video.bookmarked_by_me
     try {
@@ -277,7 +286,7 @@ function Reels() {
       bookmarked
         ? await axios.delete(`${API_URL}/posts/${video.id}/bookmark`, { headers })
         : await axios.post(`${API_URL}/posts/${video.id}/bookmark`, {}, { headers })
-      setVideos((prev) => prev.map((v) =>
+      setVideos(prev => prev.map(v =>
         v.id === video.id
           ? { ...v, bookmarked_by_me: !bookmarked, bookmarks_count: bookmarked ? v.bookmarks_count - 1 : v.bookmarks_count + 1 }
           : v
@@ -285,7 +294,6 @@ function Reels() {
     } catch (err) { console.error(err) }
   }
 
-  // ── follow ────────────────────────────────────────────────────────────
   const handleFollow = async (video) => {
     try {
       const token = await getValidToken()
@@ -294,7 +302,7 @@ function Reels() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      setVideos((prev) => prev.map((v) =>
+      setVideos(prev => prev.map(v =>
         v.user_id === video.user_id ? { ...v, is_following: true } : v
       ))
     } catch (err) { console.error(err) }
@@ -312,31 +320,32 @@ function Reels() {
 
   return (
     <div className="reelsPage">
-      {/* ── back button ── */}
       <button className="reelsBackBtn" onClick={() => navigate(-1)}>
         <ArrowBackIcon sx={{ fontSize: 24 }} />
       </button>
 
-      {/* ── mute indicator ── */}
       <div className="reelsMuteHint" onClick={() => setMuted(m => !m)}>
         {muted ? <VolumeOffIcon sx={{ fontSize: 20 }} /> : <VolumeUpIcon sx={{ fontSize: 20 }} />}
       </div>
 
-      {/* ── reels container ── */}
-      {videos.map((video, index) => (
-  <ReelItem
-    key={video.id}
-    index={index}
-    video={video}
-    isActive={index === activeIndex}
-    muted={muted}
-    onMuteToggle={() => setMuted(m => !m)}
-    onLike={handleLike}
-    onRepost={handleRepost}
-    onBookmark={handleBookmark}
-    onFollow={handleFollow}
-  />
-))}
+      {/* Bug #1 + #3 fix: the scroll container needs ref so the observer
+          can use it as its root. The reelsPage CSS already handles overflow. */}
+      <div className="reelsContainer" ref={containerRef}>
+        {videos.map((video, index) => (
+          <ReelItem
+            key={video.id}
+            index={index}
+            video={video}
+            isActive={index === activeIndex}
+            muted={muted}
+            onMuteToggle={() => setMuted(m => !m)}
+            onLike={handleLike}
+            onRepost={handleRepost}
+            onBookmark={handleBookmark}
+            onFollow={handleFollow}
+          />
+        ))}
+      </div>
     </div>
   )
 }

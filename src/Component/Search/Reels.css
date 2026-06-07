@@ -206,3 +206,26 @@
   color: #fff;
   text-shadow: 0 1px 4px rgba(0,0,0,0.7);
 }
+/* ── Skeleton shimmer (shared, add once globally or per-file) ────────────────
+   If you already have .skelLine / .skelCircle elsewhere, skip this block.    */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.skelLine,
+.skelCircle {
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--accent-light) 50%,
+    var(--border) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.skelCircle {
+  border-radius: 50%;
+}

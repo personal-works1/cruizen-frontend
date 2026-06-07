@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import { useAuth } from "../Context/AuthContext"
 import { useSocket } from "../Context/SocketContext"
@@ -14,29 +14,99 @@ import SendIcon from "@mui/icons-material/Send"
 import CloseIcon from "@mui/icons-material/Close"
 import "./Messages.css"
 
+// ── Skeleton components ───────────────────────────────────────────────────────
+function ConversationItemSkeleton() {
+  return (
+    <div className="conversationItem" style={{ cursor: "default", pointerEvents: "none" }}>
+      <div className="convAvatar">
+        <div className="skelCircle shimmer" style={{ width: 48, height: 48 }} />
+      </div>
+      <div className="convInfo">
+        <div className="convTopRow">
+          <div className="skelLine shimmer" style={{ width: "120px", height: "13px" }} />
+          <div className="skelLine shimmer" style={{ width: "28px", height: "11px" }} />
+        </div>
+        <div className="convBottomRow" style={{ marginTop: "6px" }}>
+          <div className="skelLine shimmer" style={{ width: "180px", height: "12px" }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ConversationListSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 7 }).map((_, i) => (
+        <ConversationItemSkeleton key={i} />
+      ))}
+    </>
+  )
+}
+
+function MessageBubbleSkeleton({ mine, wide }) {
+  return (
+    <div className={`messageBubbleWrapper ${mine ? "mine" : "theirs"}`}
+      style={{ pointerEvents: "none" }}>
+      {!mine && (
+        <div className="skelCircle shimmer" style={{ width: 28, height: 28, flexShrink: 0 }} />
+      )}
+      <div
+        className="skelLine shimmer"
+        style={{
+          width: wide ? "55%" : "35%",
+          height: mine ? "38px" : "52px",
+          borderRadius: "16px",
+          maxWidth: "70%",
+        }}
+      />
+    </div>
+  )
+}
+
+function ChatSkeleton() {
+  // Alternating pattern of mine/theirs bubbles
+  const pattern = [
+    { mine: false, wide: true  },
+    { mine: true,  wide: false },
+    { mine: false, wide: false },
+    { mine: true,  wide: true  },
+    { mine: false, wide: true  },
+    { mine: true,  wide: false },
+    { mine: false, wide: false },
+    { mine: true,  wide: true  },
+    { mine: false, wide: false },
+  ]
+  return (
+    <div className="messagesList" style={{ pointerEvents: "none" }}>
+      {pattern.map((p, i) => (
+        <MessageBubbleSkeleton key={i} mine={p.mine} wide={p.wide} />
+      ))}
+    </div>
+  )
+}
+
+// ── Main Messages ─────────────────────────────────────────────────────────────
 export default function Messages() {
   const { getValidToken, user } = useAuth()
   const { socket, onlineUsers } = useSocket()
   const navigate = useNavigate()
 
-  // ── conversation list state ───────────────────────────────────────────
-  const [conversations,   setConversations]   = useState([])
-  const [loading,         setLoading]         = useState(true)
-  const [search,          setSearch]          = useState("")
-  const [showNewMessage,  setShowNewMessage]  = useState(false)
-  const [userSearch,      setUserSearch]      = useState("")
-  const [userResults,     setUserResults]     = useState([])
-  const [userSearching,   setUserSearching]   = useState(false)
+  const [conversations,  setConversations]  = useState([])
+  const [loading,        setLoading]        = useState(true)
+  const [search,         setSearch]         = useState("")
+  const [showNewMessage, setShowNewMessage] = useState(false)
+  const [userSearch,     setUserSearch]     = useState("")
+  const [userResults,    setUserResults]    = useState([])
+  const [userSearching,  setUserSearching]  = useState(false)
 
-  // ── active conversation state ─────────────────────────────────────────
-  const [activeConvId,  setActiveConvId]  = useState(null)
-  const [activeConv,    setActiveConv]    = useState(null)
-  const [messages,      setMessages]      = useState([])
-  const [input,         setInput]         = useState("")
-  const [msgLoading,    setMsgLoading]    = useState(false)
-  const [otherTyping,   setOtherTyping]   = useState(false)
+  const [activeConvId, setActiveConvId] = useState(null)
+  const [activeConv,   setActiveConv]   = useState(null)
+  const [messages,     setMessages]     = useState([])
+  const [input,        setInput]        = useState("")
+  const [msgLoading,   setMsgLoading]   = useState(false)
+  const [otherTyping,  setOtherTyping]  = useState(false)
 
-  // ── message search state ──────────────────────────────────────────────
   const [showSearch,    setShowSearch]    = useState(false)
   const [searchText,    setSearchText]    = useState("")
   const [searchResults, setSearchResults] = useState([])
@@ -46,42 +116,42 @@ export default function Messages() {
   const typingTimeoutRef = useRef(null)
   const messageRefs      = useRef({})
 
-   useEffect(() => {
+  useEffect(() => {
     if (!user) navigate("/auth")
   }, [user])
 
-  if (!user) return null 
+  if (!user) return null
 
-useEffect(() => {
-  if (!user) return
-  const fetch = async () => {
-    try {
-      const token = await getValidToken()
-      const res = await axios.get(`${API_URL}/messages/conversations`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      
-      let convList = res.data.conversations
+  // ── fetch conversations ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return
+    const fetch = async () => {
+      try {
+        const token = await getValidToken()
+        const res = await axios.get(`${API_URL}/messages/conversations`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
 
-      // ← if coming from profile message button, merge that conv in
-     if (location.state?.openConversation) {
-  const conv = location.state.openConversation
-  const exists = convList.find(c => c.id === conv.id)
-  const fullConv = exists || conv  // ← use full version if available
-  if (!exists) convList = [fullConv, ...convList]
-  setActiveConvId(fullConv.id)
-  setActiveConv(fullConv)  // ← now has all fields
-}
+        let convList = res.data.conversations
 
-      setConversations(convList)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
+        if (location.state?.openConversation) {
+          const conv = location.state.openConversation
+          const exists = convList.find(c => c.id === conv.id)
+          const fullConv = exists || conv
+          if (!exists) convList = [fullConv, ...convList]
+          setActiveConvId(fullConv.id)
+          setActiveConv(fullConv)
+        }
+
+        setConversations(convList)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
-  fetch()
-}, [user, location.state])
+    fetch()
+  }, [user, location.state])
 
   // ── fetch messages when active conversation changes ───────────────────
   useEffect(() => {
@@ -104,7 +174,7 @@ useEffect(() => {
     fetch()
   }, [activeConvId])
 
-  // ── socket setup ──────────────────────────────────────────────────────
+  // ── socket ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!socket || !activeConvId) return
     socket.emit("join_conversation", activeConvId)
@@ -124,14 +194,14 @@ useEffect(() => {
     }
   }, [socket, activeConvId])
 
-  // ── scroll to bottom on new messages ─────────────────────────────────
+  // ── scroll to bottom ──────────────────────────────────────────────────
   useEffect(() => {
     if (!showSearch) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }
   }, [messages])
 
-  // ── message search ────────────────────────────────────────────────────
+  // ── in-chat message search ────────────────────────────────────────────
   useEffect(() => {
     if (!searchText.trim()) {
       setSearchResults([])
@@ -151,7 +221,7 @@ useEffect(() => {
     }
   }, [searchText, messages])
 
-  // ── user search for new message ───────────────────────────────────────
+  // ── user search (new message) ─────────────────────────────────────────
   useEffect(() => {
     if (!userSearch.trim()) { setUserResults([]); return }
     const timeout = setTimeout(async () => {
@@ -172,7 +242,7 @@ useEffect(() => {
     return () => clearTimeout(timeout)
   }, [userSearch])
 
-  // ── open a conversation ───────────────────────────────────────────────
+  // ── handlers ──────────────────────────────────────────────────────────
   const openConversation = (conv) => {
     setActiveConvId(conv.id)
     setActiveConv(conv)
@@ -182,7 +252,6 @@ useEffect(() => {
     setSearchText("")
   }
 
-  // ── start new conversation ────────────────────────────────────────────
   const handleStartConversation = async (userId) => {
     try {
       const token = await getValidToken()
@@ -344,7 +413,9 @@ useEffect(() => {
           {/* ── existing conversations ── */}
           {!showNewMessage && (
             <>
-              {loading && <p className="messagesStatus">Loading...</p>}
+              {/* skeleton while loading */}
+              {loading && <ConversationListSkeleton />}
+
               {!loading && filtered.length === 0 && (
                 <div className="messagesEmpty">
                   <ChatOutlinedIcon sx={{ fontSize: 48, color: "var(--accent-mid)" }} />
@@ -354,7 +425,8 @@ useEffect(() => {
                   }
                 </div>
               )}
-              {filtered.map((conv) => (
+
+              {!loading && filtered.map((conv) => (
                 <div
                   key={conv.id}
                   className={`conversationItem ${conv.unread_count > 0 ? "unread" : ""} ${activeConvId === conv.id ? "active" : ""}`}
@@ -415,7 +487,17 @@ useEffect(() => {
               >
                 <ArrowBackIcon sx={{ fontSize: 20 }} />
               </button>
-              {activeConv && (
+
+              {/* header: skeleton while loading messages, real info otherwise */}
+              {msgLoading && !activeConv ? (
+                <div className="convHeaderInfo">
+                  <div className="skelCircle shimmer" style={{ width: 38, height: 38 }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    <div className="skelLine shimmer" style={{ width: 100, height: 13 }} />
+                    <div className="skelLine shimmer" style={{ width: 60, height: 11 }} />
+                  </div>
+                </div>
+              ) : activeConv && (
                 <div className="convHeaderInfo">
                   <div style={{ position: "relative", display: "inline-block" }}>
                     <UserAvatar avatar_url={activeConv.other_avatar} size={38} />
@@ -440,6 +522,7 @@ useEffect(() => {
                   </div>
                 </div>
               )}
+
               <button
                 className="convSearchBtn"
                 onClick={() => {
@@ -487,52 +570,51 @@ useEffect(() => {
               </div>
             )}
 
-            {/* ── messages list ── */}
-            <div className="messagesList">
-              {msgLoading && (
-                <p style={{ textAlign: "center", color: "var(--accent)", padding: "2rem" }}>
-                  Loading...
-                </p>
-              )}
-              {messages.map((msg) => {
-                const isMine      = msg.sender_id === user.id
-                const isHighlight = searchResults.some(r => r.id === msg.id)
-                const isCurrent   = searchResults[searchIndex]?.id === msg.id
-                return (
-                  <div
-                    key={msg.id}
-                    ref={el => messageRefs.current[msg.id] = el}
-                    className={`messageBubbleWrapper ${isMine ? "mine" : "theirs"}`}
-                  >
-                    {!isMine && <UserAvatar avatar_url={msg.avatar_url} size={28} />}
-                    <div className={`messageBubble ${isMine ? "mine" : "theirs"} ${
-                      isCurrent ? "searchCurrent" : isHighlight ? "searchMatch" : ""
-                    }`}>
-                      <p>
-                        {searchText
-                          ? highlight(msg.content, searchText)
-                          : msg.content}
-                      </p>
-                      <span className="messageTime">
-                        {new Date(msg.created_at).toLocaleTimeString("en-NG", {
-                          hour: "2-digit", minute: "2-digit"
-                        })}
-                      </span>
+            {/* ── messages list: skeleton while loading, real messages otherwise ── */}
+            {msgLoading ? (
+              <ChatSkeleton />
+            ) : (
+              <div className="messagesList">
+                {messages.map((msg) => {
+                  const isMine      = msg.sender_id === user.id
+                  const isHighlight = searchResults.some(r => r.id === msg.id)
+                  const isCurrent   = searchResults[searchIndex]?.id === msg.id
+                  return (
+                    <div
+                      key={msg.id}
+                      ref={el => messageRefs.current[msg.id] = el}
+                      className={`messageBubbleWrapper ${isMine ? "mine" : "theirs"}`}
+                    >
+                      {!isMine && <UserAvatar avatar_url={msg.avatar_url} size={28} />}
+                      <div className={`messageBubble ${isMine ? "mine" : "theirs"} ${
+                        isCurrent ? "searchCurrent" : isHighlight ? "searchMatch" : ""
+                      }`}>
+                        <p>
+                          {searchText
+                            ? highlight(msg.content, searchText)
+                            : msg.content}
+                        </p>
+                        <span className="messageTime">
+                          {new Date(msg.created_at).toLocaleTimeString("en-NG", {
+                            hour: "2-digit", minute: "2-digit"
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+                {otherTyping && (
+                  <div className="messageBubbleWrapper theirs">
+                    <div className="messageBubble theirs typingBubble">
+                      <span className="typingDot" />
+                      <span className="typingDot" />
+                      <span className="typingDot" />
                     </div>
                   </div>
-                )
-              })}
-              {otherTyping && (
-                <div className="messageBubbleWrapper theirs">
-                  <div className="messageBubble theirs typingBubble">
-                    <span className="typingDot" />
-                    <span className="typingDot" />
-                    <span className="typingDot" />
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
 
             {/* ── input ── */}
             <div className="messageInputRow">
