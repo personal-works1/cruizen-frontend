@@ -8,6 +8,8 @@ import RepeatOutlinedIcon from "@mui/icons-material/RepeatOutlined";
 import BookmarkBorderOutlinedIcon from "@mui/icons-material/BookmarkBorderOutlined";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import SendIcon from "@mui/icons-material/Send";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import WinnerBadge from "../Leaderboard/WinnerBadge";
 import CommentModal from "./Comment/commentModel";
 import { useNavigate } from "react-router-dom";
@@ -15,97 +17,188 @@ import UserAvatar from "../Common/UserAvatar";
 import { useAuth } from "../Context/AuthContext";
 import { API_URL } from "../Authentication/Authentication";
 
+// ── Global single-video manager (Bug #1) ─────────────────────────────────────
+const videoManager = {
+  current: null,
+  play(videoEl) {
+    if (this.current && this.current !== videoEl) {
+      this.current.pause();
+    }
+    this.current = videoEl;
+  },
+  clear(videoEl) {
+    if (this.current === videoEl) this.current = null;
+  },
+};
+
+// ── VideoThumb ────────────────────────────────────────────────────────────────
+// - Autoplays (muted) when scrolled into view         (Bug #3 / #1)
+// - Pauses when scrolled out                          (Bug #3)
+// - Only one video plays at a time                    (Bug #1)
+// - Click anywhere on video → /reels/:postId          (Bug #2)
+// - Mute/unmute button (stopPropagation, no navigate) (sound)
+// - No pill
+function VideoThumb({ src, postId }) {
+  const navigate = useNavigate();
+  const videoRef = useRef(null);
+  const [muted, setMuted] = useState(true);
+
+  // autoplay on scroll-in, pause on scroll-out
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          videoManager.play(vid);
+          vid.play().catch(() => {});
+        } else {
+          vid.pause();
+          videoManager.clear(vid);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(vid);
+    return () => {
+      observer.disconnect();
+      videoManager.clear(vid);
+    };
+  }, []);
+
+  const handleMuteToggle = (e) => {
+    e.stopPropagation(); // don't navigate
+    const vid = videoRef.current;
+    if (!vid) return;
+    vid.muted = !vid.muted;
+    setMuted(vid.muted);
+  };
+
+  return (
+    <div
+      className="ImgOrVideo"
+      style={{ position: "relative", cursor: "pointer" }}
+      onClick={() => navigate(`/reels/${postId}`)}
+    >
+      <video
+        ref={videoRef}
+        src={src}
+        loop
+        playsInline
+        muted={muted}
+        style={{ width: "100%", borderRadius: "8px", display: "block", pointerEvents: "none" }}
+      />
+
+      {/* mute/unmute — stopPropagation so it doesn't also navigate */}
+      <button
+        onClick={handleMuteToggle}
+        style={{
+          position: "absolute",
+          bottom: 8,
+          right: 8,
+          background: "rgba(0,0,0,0.55)",
+          border: "none",
+          borderRadius: "50%",
+          width: 34,
+          height: 34,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#fff",
+          backdropFilter: "blur(4px)",
+          zIndex: 2,
+        }}
+      >
+        {muted
+          ? <VolumeOffIcon sx={{ fontSize: 17 }} />
+          : <VolumeUpIcon  sx={{ fontSize: 17 }} />}
+      </button>
+    </div>
+  );
+}
+
+// ── PostCard ──────────────────────────────────────────────────────────────────
 export default function PostCard({
   post,
   onLikeToggle,
   onRepostToggle,
   onBookmarkToggle,
+  onDelete,
   autoOpenComments = false,
 }) {
   const { user, getValidToken } = useAuth();
   const navigate = useNavigate();
 
-  // ── guard against null post or user not loaded yet ───────────────────
   if (!post || !post.id) return null;
 
-  const isLiked = post.liked_by_me;
-  const isReposted = post.reposted_by_me;
+  const isLiked      = post.liked_by_me;
+  const isReposted   = post.reposted_by_me;
   const isBookmarked = post.bookmarked_by_me;
 
-  const [showCommentModal, setShowCommentModal] = useState(false);
-  const [viewCounted, setViewCounted] = useState(false); // ← prevent double counting
-  const cardRef = useRef(null); // ← ref to detect when card enters viewport
-  const [badges, setBadges] = useState([]);
-  const [localCommentsCount, setLocalCommentsCount] = useState(
-    post.comments_count || 0,
-  );
+  const [showCommentModal,   setShowCommentModal]   = useState(false);
+  const [viewCounted,        setViewCounted]        = useState(false);
+  const [badges,             setBadges]             = useState([]);
+  const [localCommentsCount, setLocalCommentsCount] = useState(post.comments_count || 0);
 
-  const profileUsername = post.real_username || post.username;
+  const cardRef = useRef(null);
 
-  // ── auto open comments if navigated from comment notification ────────
   useEffect(() => {
     if (autoOpenComments) setShowCommentModal(true);
   }, [autoOpenComments]);
+
   useEffect(() => {
     const fetchBadges = async () => {
       try {
         const token = await getValidToken();
-        const res = await axios.get(
-          `${API_URL}/leaderboard/badges/${post.user_id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        const res = await axios.get(`${API_URL}/leaderboard/badges/${post.user_id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setBadges(res.data.badges);
       } catch {}
     };
     if (post.user_id) fetchBadges();
   }, [post.user_id]);
+
   useEffect(() => {
     setLocalCommentsCount(post.comments_count || 0);
   }, [post.comments_count]);
 
-  // ── silently record view when post enters viewport ───────────────────
-  // uses IntersectionObserver — fires when 60% of post is visible
-  // only counts once per render (viewCounted flag prevents duplicates)
   const recordView = useCallback(async () => {
-    if (viewCounted) return; // ← already counted this render
-    if (!user) return; // ← not logged in, skip
+    if (viewCounted || !user) return;
     try {
       const token = await getValidToken();
       await axios.post(
         `${API_URL}/posts/${post.id}/view`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setViewCounted(true); // ← mark as counted so it doesn't fire again
+      setViewCounted(true);
     } catch (err) {
-      // ── silent fail — views are not critical, don't disturb UX ──────
       console.error("View record failed silently:", err);
     }
   }, [post.id, user, viewCounted]);
 
   useEffect(() => {
-    // ── create observer — watches when post enters viewport ───────────
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // ── fires when 60% of the post card is visible ───────────────
-          if (entry.isIntersecting && !viewCounted) {
-            recordView();
-          }
+          if (entry.isIntersecting && !viewCounted) recordView();
         });
       },
-      { threshold: 0.6 }, // ← 60% of card must be visible to count
+      { threshold: 0.6 }
     );
-
-    // ── attach observer to the post card element ──────────────────────
     if (cardRef.current) observer.observe(cardRef.current);
-
-    // ── cleanup: disconnect observer when component unmounts ──────────
     return () => observer.disconnect();
   }, [recordView, viewCounted]);
-  // ── attach ref so IntersectionObserver can watch this element ──────
+
+  const goToProfile = () => {
+    if (post.author_type === "business") navigate(`/shop/${post.vendor_id}`);
+    else navigate(`/profile/${post.real_username}`);
+  };
+
   return (
     <div className="userPostFeed" ref={cardRef}>
       <div className="profileNview">
@@ -114,38 +207,24 @@ export default function PostCard({
             avatar_url={post.avatar_url}
             size={40}
             style={{ cursor: "pointer" }}
-            onClick={() => {
-              if (post.author_type === "business") {
-                navigate(`/shop/${post.vendor_id}`);
-              } else {
-                navigate(`/profile/${post.real_username}`);
-              }
-            }}
+            onClick={goToProfile}
           />
           <p
             className="pUsername"
-            style={{ cursor: "pointer", color: "var(--text-primary)" }} // ← added color
-            onClick={() => {
-              if (post.author_type === "business") {
-                navigate(`/shop/${post.vendor_id}`);
-              } else {
-                navigate(`/profile/${post.real_username}`);
-              }
-            }}
+            style={{ cursor: "pointer", color: "var(--text-primary)" }}
+            onClick={goToProfile}
           >
             {post.name || post.username}
             {post.author_type === "business" && (
-              <span
-                style={{
-                  fontSize: "10px",
-                  background: "var(--accent-light)", // ← was #f5e6ff
-                  color: "var(--accent)", // ← was #61027b
-                  borderRadius: "4px",
-                  padding: "1px 5px",
-                  marginLeft: "6px",
-                  fontWeight: 600,
-                }}
-              >
+              <span style={{
+                fontSize: "10px",
+                background: "var(--accent-light)",
+                color: "var(--accent)",
+                borderRadius: "4px",
+                padding: "1px 5px",
+                marginLeft: "6px",
+                fontWeight: 600,
+              }}>
                 🏪 Business
               </span>
             )}
@@ -153,123 +232,80 @@ export default function PostCard({
           <WinnerBadge badges={badges} size="small" />
         </div>
         <div>
-          {/* MUI sx doesn't read CSS vars reliably — use style instead */}
-          <EqualizerOutlinedIcon style={{ color: "var(--accent)" }} />{" "}
-          {/* ← was sx */}
+          <EqualizerOutlinedIcon style={{ color: "var(--accent)" }} />
           <p className="pUsername" style={{ color: "var(--text-primary)" }}>
-            {" "}
-            {/* ← added */}
             {post.views_count || 0}
           </p>
         </div>
       </div>
 
       <div className="postFeedActivity">
-        {/* ← "username: caption" fix — just show post_text */}
         <p style={{ color: "var(--text-primary)" }}>{post.post_text}</p>
 
-        {/* media stays the same */}
         {post.media_url && post.media_type === "image" && (
           <div className="ImgOrVideo">
             <img
               src={post.media_url}
               alt="post"
-              onError={(e) => {
-                e.target.parentElement.style.display = "none";
-              }}
+              onError={(e) => { e.target.parentElement.style.display = "none"; }}
             />
           </div>
         )}
+
         {post.media_url && post.media_type === "video" && (
-          <div className="ImgOrVideo">
-            <video src={post.media_url} controls />
-          </div>
+          <VideoThumb src={post.media_url} postId={post.id} />
         )}
 
         <div className="engagementContainer">
           <div className="S">
-            <div
-              onClick={() => onLikeToggle(post)}
-              style={{ cursor: "pointer" }}
-            >
-              {isLiked ? (
-                <FavoriteIcon sx={{ color: "red" }} />
-              ) : (
-                <FavoriteBorderIcon style={{ color: "var(--text-primary)" }} />
-              )}
-              <p style={{ color: "var(--text-primary)" }}>
-                {post.likes_count || 0}
-              </p>
+            <div onClick={() => onLikeToggle(post)} style={{ cursor: "pointer" }}>
+              {isLiked
+                ? <FavoriteIcon sx={{ color: "red" }} />
+                : <FavoriteBorderIcon style={{ color: "var(--text-primary)" }} />}
+              <p style={{ color: "var(--text-primary)" }}>{post.likes_count || 0}</p>
             </div>
-            <div
-              onClick={() => setShowCommentModal(true)}
-              style={{ cursor: "pointer" }}
-            >
+
+            <div onClick={() => setShowCommentModal(true)} style={{ cursor: "pointer" }}>
               <CommentOutlinedIcon style={{ color: "var(--text-primary)" }} />
-              <p style={{ color: "var(--text-primary)" }}>
-                {localCommentsCount}
-              </p>
+              <p style={{ color: "var(--text-primary)" }}>{localCommentsCount}</p>
             </div>
-            <div
-              onClick={() => onRepostToggle(post)}
-              style={{ cursor: "pointer" }}
-            >
-              <RepeatOutlinedIcon
-                style={{
-                  color: isReposted ? "#17bf63" : "var(--text-primary)",
-                }}
-              />
-              <p
-                style={{
-                  color: isReposted ? "#17bf63" : "var(--text-primary)",
-                }}
-              >
+
+            <div onClick={() => onRepostToggle(post)} style={{ cursor: "pointer" }}>
+              <RepeatOutlinedIcon style={{ color: isReposted ? "#17bf63" : "var(--text-primary)" }} />
+              <p style={{ color: isReposted ? "#17bf63" : "var(--text-primary)" }}>
                 {post.reposts_count || 0}
               </p>
             </div>
-            <div
-              onClick={() => onBookmarkToggle(post)}
-              style={{ cursor: "pointer" }}
-            >
-              {isBookmarked ? (
-                <BookmarkIcon style={{ color: "var(--accent)" }} /> // ← was sx #9c01c6
-              ) : (
-                <BookmarkBorderOutlinedIcon
-                  style={{ color: "var(--text-primary)" }}
-                />
-              )}
-              <p style={{ color: "var(--text-primary)" }}>
-                {post.bookmarks_count || 0}
-              </p>
+
+            <div onClick={() => onBookmarkToggle(post)} style={{ cursor: "pointer" }}>
+              {isBookmarked
+                ? <BookmarkIcon style={{ color: "var(--accent)" }} />
+                : <BookmarkBorderOutlinedIcon style={{ color: "var(--text-primary)" }} />}
+              <p style={{ color: "var(--text-primary)" }}>{post.bookmarks_count || 0}</p>
             </div>
-           
-{user && user.id === post.user_id && (
-  <button
-    onClick={async () => {
-      if (!window.confirm("Delete this post?")) return
-      try {
-        const token = await getValidToken()
-        await axios.delete(`${API_URL}/posts/${post.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        // ← tell parent to remove post from feed
-        onDelete?.(post.id)
-      } catch (err) {
-        console.error(err)
-      }
-    }}
-    style={{
-      background: "none",
-      border: "none",
-      color: "var(--text-secondary)",
-      cursor: "pointer",
-      fontSize: "12px"
-    }}
-  >
-    🗑️
-  </button>
-)}
+
+            {user && user.id === post.user_id && (
+              <button
+                onClick={async () => {
+                  if (!window.confirm("Delete this post?")) return;
+                  try {
+                    const token = await getValidToken();
+                    await axios.delete(`${API_URL}/posts/${post.id}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    onDelete?.(post.id);
+                  } catch (err) { console.error(err); }
+                }}
+                style={{
+                  background: "none", border: "none",
+                  color: "var(--text-secondary)", cursor: "pointer", fontSize: "12px",
+                }}
+              >
+                🗑️
+              </button>
+            )}
           </div>
+
           <div className="O">
             <SendIcon style={{ color: "var(--text-primary)" }} />
             <p style={{ color: "var(--text-primary)" }}>0</p>
@@ -281,7 +317,7 @@ export default function PostCard({
         <CommentModal
           post={post}
           onClose={() => setShowCommentModal(false)}
-          onCommentAdded={() => setLocalCommentsCount((prev) => prev + 1)}
+          onCommentAdded={() => setLocalCommentsCount(prev => prev + 1)}
         />
       )}
     </div>
