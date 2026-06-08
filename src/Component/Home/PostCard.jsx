@@ -10,6 +10,7 @@ import BookmarkIcon from "@mui/icons-material/Bookmark";
 import SendIcon from "@mui/icons-material/Send";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import CloseIcon from "@mui/icons-material/Close";
 import WinnerBadge from "../Leaderboard/WinnerBadge";
 import CommentModal from "./Comment/commentModel";
 import { useNavigate } from "react-router-dom";
@@ -31,23 +32,80 @@ const videoManager = {
   },
 };
 
+// ── ImageLightbox ─────────────────────────────────────────────────────────────
+function ImageLightbox({ src, onClose }) {
+  // close on Escape key
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.92)",
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1rem",
+        cursor: "zoom-out",
+      }}
+    >
+      {/* close button */}
+      <button
+        onClick={onClose}
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          background: "rgba(255,255,255,0.15)",
+          border: "none",
+          borderRadius: "50%",
+          width: 40,
+          height: 40,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#fff",
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        <CloseIcon sx={{ fontSize: 22 }} />
+      </button>
+
+      {/* image — stopPropagation so clicking the image itself doesn't close */}
+      <img
+        src={src}
+        alt="full size"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: "100%",
+          maxHeight: "90vh",
+          objectFit: "contain",
+          borderRadius: "8px",
+          cursor: "default",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
+        }}
+      />
+    </div>
+  );
+}
+
 // ── VideoThumb ────────────────────────────────────────────────────────────────
-// - Autoplays (muted) when scrolled into view         (Bug #3 / #1)
-// - Pauses when scrolled out                          (Bug #3)
-// - Only one video plays at a time                    (Bug #1)
-// - Click anywhere on video → /reels/:postId          (Bug #2)
-// - Mute/unmute button (stopPropagation, no navigate) (sound)
-// - No pill
 function VideoThumb({ src, postId }) {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [muted, setMuted] = useState(true);
 
-  // autoplay on scroll-in, pause on scroll-out
   useEffect(() => {
     const vid = videoRef.current;
     if (!vid) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -60,16 +118,12 @@ function VideoThumb({ src, postId }) {
       },
       { threshold: 0.5 }
     );
-
     observer.observe(vid);
-    return () => {
-      observer.disconnect();
-      videoManager.clear(vid);
-    };
+    return () => { observer.disconnect(); videoManager.clear(vid); };
   }, []);
 
   const handleMuteToggle = (e) => {
-    e.stopPropagation(); // don't navigate
+    e.stopPropagation();
     const vid = videoRef.current;
     if (!vid) return;
     vid.muted = !vid.muted;
@@ -90,31 +144,20 @@ function VideoThumb({ src, postId }) {
         muted={muted}
         style={{ width: "100%", borderRadius: "8px", display: "block", pointerEvents: "none" }}
       />
-
-      {/* mute/unmute — stopPropagation so it doesn't also navigate */}
       <button
         onClick={handleMuteToggle}
         style={{
           position: "absolute",
-          bottom: 8,
-          right: 8,
+          bottom: 8, right: 8,
           background: "rgba(0,0,0,0.55)",
-          border: "none",
-          borderRadius: "50%",
-          width: 34,
-          height: 34,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: "#fff",
-          backdropFilter: "blur(4px)",
-          zIndex: 2,
+          border: "none", borderRadius: "50%",
+          width: 34, height: 34,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: "#fff",
+          backdropFilter: "blur(4px)", zIndex: 2,
         }}
       >
-        {muted
-          ? <VolumeOffIcon sx={{ fontSize: 17 }} />
-          : <VolumeUpIcon  sx={{ fontSize: 17 }} />}
+        {muted ? <VolumeOffIcon sx={{ fontSize: 17 }} /> : <VolumeUpIcon sx={{ fontSize: 17 }} />}
       </button>
     </div>
   );
@@ -139,6 +182,7 @@ export default function PostCard({
   const isBookmarked = post.bookmarked_by_me;
 
   const [showCommentModal,   setShowCommentModal]   = useState(false);
+  const [lightboxSrc,        setLightboxSrc]        = useState(null);
   const [viewCounted,        setViewCounted]        = useState(false);
   const [badges,             setBadges]             = useState([]);
   const [localCommentsCount, setLocalCommentsCount] = useState(post.comments_count || 0);
@@ -242,8 +286,13 @@ export default function PostCard({
       <div className="postFeedActivity">
         <p style={{ color: "var(--text-primary)" }}>{post.post_text}</p>
 
+        {/* image — click opens lightbox */}
         {post.media_url && post.media_type === "image" && (
-          <div className="ImgOrVideo">
+          <div
+            className="ImgOrVideo"
+            style={{ cursor: "zoom-in" }}
+            onClick={() => setLightboxSrc(post.media_url)}
+          >
             <img
               src={post.media_url}
               alt="post"
@@ -252,6 +301,7 @@ export default function PostCard({
           </div>
         )}
 
+        {/* video — autoplay, mute toggle, click → reels */}
         {post.media_url && post.media_type === "video" && (
           <VideoThumb src={post.media_url} postId={post.id} />
         )}
@@ -312,6 +362,11 @@ export default function PostCard({
           </div>
         </div>
       </div>
+
+      {/* fullscreen image lightbox */}
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
 
       {showCommentModal && (
         <CommentModal
