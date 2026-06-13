@@ -240,7 +240,9 @@ export default function PostCard({
 
   const goToProfile = () => {
     if (post.author_type === "business") navigate(`/shop/${post.vendor_id}`);
-    else navigate(`/profile/${post.real_username}`);
+    else navigate(`/profile/${post.username}`);
+   
+    
   };
 
   return (

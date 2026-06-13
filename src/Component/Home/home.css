@@ -131,13 +131,14 @@
   border-radius: 1em;
   overflow: hidden;
   background-color: transparent;
+ 
 }
 
 .ImgOrVideo img,
 .ImgOrVideo video {
   width: 100%;
   display: block;
-  max-height: 60vh;
+  max-height: 90vh;
   object-fit: cover;
   border-radius: 1em;
 }

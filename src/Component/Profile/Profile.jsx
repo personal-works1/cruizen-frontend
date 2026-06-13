@@ -422,7 +422,7 @@ function Profile() {
   const displayBio      = isBusinessView && vendorProfile ? vendorProfile.business_category  : profileData?.bio;
 
   // ── Fetch profile (with cache) ────────────────────────────────────────
-  useEffect(() => {
+ useEffect(() => {
     if (!targetUsername || authLoading) return;
 
     const fetchProfile = async () => {
@@ -988,7 +988,7 @@ function Profile() {
                 <label>Business Email</label>
                 <input type="email" name="business_email"
                   placeholder="store@example.com"
-                  onChange={handleVendorChange} required />
+                  onChange={handleVendorChange}  />
               </div>
               <div className="field">
                 <label>Business Category</label>
