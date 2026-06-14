@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, useMemo } from "react"
 import axios from "axios"
 import { useAuth } from "./AuthContext"
 import { API_URL } from "../Authentication/Authentication"
@@ -54,11 +54,12 @@ useEffect(() => {
 
   // ── what the current active identity looks like ──────────────────────
   // any component can read this instead of figuring it out themselves
-  const activeIdentity = mode === "business" && vendorProfile
+ const activeIdentity = useMemo(() => 
+  mode === "business" && vendorProfile
     ? {
         id:         vendorProfile.id,
         name:       vendorProfile.business_name,
-        username:   vendorProfile.business_name, // shown in posts/comments
+        username:   vendorProfile.business_name,
         avatar_url: vendorProfile.avatar_url,
         type:       "business",
         vendor_id:  vendorProfile.id,
@@ -67,10 +68,11 @@ useEffect(() => {
         id:         user?.id,
         name:       user?.name,
         username:   user?.username,
-        avatar_url: user?.avatar_url,
+        avatar_url: user?.avatar_url,  // ← will now always reflect latest user
         type:       "personal",
         vendor_id:  null,
       }
+, [mode, vendorProfile, user])
 
   return (
     <ModeContext.Provider value={{ mode, switchMode, vendorProfile, setVendorProfile, activeIdentity }}>

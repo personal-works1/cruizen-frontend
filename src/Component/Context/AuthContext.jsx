@@ -90,19 +90,19 @@ export function AuthProvider({ children }) {
     init()
   }, [refreshAccessToken])
 
-  const login = (token, refreshToken, user) => {
-    // ── guard: never store undefined ─────────────────────────────────
-    if (!token || !user) {
-      console.error("login() called with missing token or user", { token, user })
-      return
-    }
-    localStorage.setItem("token", token)
-    localStorage.setItem("refreshToken", refreshToken || "")
-    localStorage.setItem("user", JSON.stringify(user))
-    localStorage.removeItem("mode")
-    setToken(token)
-    setUser(user)
+ const login = (token, refreshToken, user) => {
+  if (!token || !user) {
+    console.error("login() called with missing token or user", { token, user })
+    return
   }
+  console.log("login() updating user to:", user) // ← add this
+  localStorage.setItem("token", token)
+  localStorage.setItem("refreshToken", refreshToken || "")
+  localStorage.setItem("user", JSON.stringify(user))
+  localStorage.removeItem("mode")
+  setToken(token)
+  setUser(user)
+}
 
   const getValidToken = useCallback(async () => {
     const current = localStorage.getItem("token")

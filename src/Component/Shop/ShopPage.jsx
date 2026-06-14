@@ -11,9 +11,15 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined"
 import VerifiedIcon from "@mui/icons-material/Verified"
 import WhatsAppIcon from "@mui/icons-material/WhatsApp"
 import InstagramIcon from "@mui/icons-material/Instagram"
+import TrustCard from "../Profile/TrustCard"
+import LinkIcon from "@mui/icons-material/Link"
+import YouTubeIcon from "@mui/icons-material/YouTube"
+import XIcon from "@mui/icons-material/X"
+import MusicNoteIcon from "@mui/icons-material/MusicNote"
+import GraphicEqIcon from "@mui/icons-material/GraphicEq"
 import "./ShopPage.css"
 
-export default function ShopPage() {
+export default function ShopPage({ vendorId: propVendorId, embedded = false }) {
   const { slug }          = useParams()
   const navigate          = useNavigate()
   const { user, getValidToken } = useAuth()
@@ -28,11 +34,14 @@ export default function ShopPage() {
   const [followPending, setFollowPending] = useState(false)
   const [shopFollowers, setShopFollowers] = useState(0)
 
-  useEffect(() => {
+ useEffect(() => {
     const fetch = async () => {
       try {
         const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/vendors/shop/${slug}`, {
+        const url = propVendorId
+          ? `${API_URL}/vendors/shop/id/${propVendorId}`
+          : `${API_URL}/vendors/shop/${slug}`
+        const res = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` }
         })
         setShop(res.data.vendor)
@@ -46,7 +55,7 @@ export default function ShopPage() {
       }
     }
     fetch()
-  }, [slug])
+  }, [slug, propVendorId])
   useEffect(() => {
   if (shop) {
     setShopFollowers(shop.followers_count || 0)
@@ -75,22 +84,42 @@ export default function ShopPage() {
 }
 
   // ── message the vendor ────────────────────────────────────────────────
-  const handleMessage = async () => {
-    if (!user) { navigate("/usersignIn"); return }
-    try {
-      const token = await getValidToken()
-      const res = await axios.post(
-        `${API_URL}/messages/conversation`,
-        { user2: shop.user_id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      navigate(`/messages/${res.data.conversation.id}`)
-    } catch (err) { console.error(err) }
-  }
-
+const handleMessage = async () => {
+  if (!user) { navigate("/usersignIn"); return }
+  try {
+    const token = await getValidToken()
+    
+    console.log("Creating conversation with:", {
+      user2: shop.user_id,
+      type: "business",
+      vendor_id: shop.id
+    })
+    
+    const res = await axios.post(
+      `${API_URL}/messages/conversation`,
+      { 
+        user2: shop.user_id,
+        type: "business",
+        vendor_id: shop.id
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    
+    console.log("Conversation returned:", res.data.conversation)
+    
+    navigate("/messages", { 
+      state: { 
+        openConversation: res.data.conversation,
+        tab: "business"
+      } 
+    })
+  } catch (err) { console.error(err) }
+}
   // ── generate shop slug for sharing ───────────────────────────────────
   const shopSlug = shop?.business_username ||
     shop?.business_name?.toLowerCase().replace(/ /g, "-")
+   
+    
 
   if (loading) return (
     <div style={{ textAlign: "center", padding: "3rem", color: "#61027b" }}>
@@ -122,9 +151,11 @@ export default function ShopPage() {
           ? <img src={shop.banner_url} alt="banner" className="shopBannerImg" />
           : <div className="shopBannerPlaceholder" />
         }
-        <button className="shopBackBtn" onClick={() => navigate(-1)}>
-          <ArrowBackIcon sx={{ fontSize: 20 }} />
-        </button>
+        {!embedded && (
+  <button className="shopBackBtn" onClick={() => navigate(-1)}>
+    <ArrowBackIcon sx={{ fontSize: 20 }} />
+  </button>
+)}
       </div>
       
 
@@ -176,7 +207,7 @@ export default function ShopPage() {
           </div>
 
           {/* ── action buttons ── */}
-          {user && user.id !== shop.user_id && (
+          {!embedded && user && user.id !== shop.user_id && (
             <div className="shopActions">
               <button
                 className={`shopFollowBtn ${following ? "following" : ""}`}
@@ -192,20 +223,56 @@ export default function ShopPage() {
           )}
 
           {/* ── social links ── */}
-          {shop.social_links && (
-            <div className="shopSocialLinks">
-              {shop.social_links?.whatsapp && (
-                <a href={shop.social_links.whatsapp} target="_blank" rel="noreferrer">
-                  <WhatsAppIcon sx={{ fontSize: 28, color: "#61027b" }} />
-                </a>
-              )}
-              {shop.social_links?.instagram && (
-                <a href={shop.social_links.instagram} target="_blank" rel="noreferrer">
-                  <InstagramIcon sx={{ fontSize: 28, color: "#61027b" }} />
-                </a>
-              )}
-            </div>
-          )}
+    
+<div className="shopSocialLinks">
+  {shop.whatsapp && (
+    <a href={shop.whatsapp} target="_blank" rel="noreferrer">
+      <WhatsAppIcon sx={{ fontSize: 28, color: "var(--accent)" }} />
+    </a>
+  )}
+  {shop.instagram && (
+    <a href={shop.instagram} target="_blank" rel="noreferrer">
+      <InstagramIcon sx={{ fontSize: 28, color: "var(--accent)" }} />
+    </a>
+  )}
+  {shop.tiktok && (
+    <a href={shop.tiktok} target="_blank" rel="noreferrer">
+      <GraphicEqIcon sx={{ fontSize: 28, color: "var(--accent)" }} />
+    </a>
+  )}
+  {shop.youtube && (
+    <a href={shop.youtube} target="_blank" rel="noreferrer">
+      <YouTubeIcon sx={{ fontSize: 28, color: "var(--accent)" }} />
+    </a>
+  )}
+  {shop.x_twitter && (
+    <a href={shop.x_twitter} target="_blank" rel="noreferrer">
+      <XIcon sx={{ fontSize: 28, color: "var(--accent)" }} />
+    </a>
+  )}
+  {shop.spotify && (
+    <a href={shop.spotify} target="_blank" rel="noreferrer">
+      <MusicNoteIcon sx={{ fontSize: 28, color: "var(--accent)" }} />
+    </a>
+  )}
+  {shop.other_1_url && (
+    <a href={shop.other_1_url} target="_blank" rel="noreferrer"
+      style={{ display: "flex", alignItems: "center", gap: "4px",
+               fontSize: "13px", color: "var(--accent)" }}>
+      <LinkIcon sx={{ fontSize: 18 }} />
+      {shop.other_1_label || "Link"}
+    </a>
+  )}
+  {shop.other_2_url && (
+    <a href={shop.other_2_url} target="_blank" rel="noreferrer"
+      style={{ display: "flex", alignItems: "center", gap: "4px",
+               fontSize: "13px", color: "var(--accent)" }}>
+      <LinkIcon sx={{ fontSize: 18 }} />
+      {shop.other_2_label || "Link"}
+    </a>
+  )}
+</div>
+
         </div>
       </div>
 
@@ -259,6 +326,8 @@ export default function ShopPage() {
       {/* ── Reviews Tab ── */}
       {activeTab === "reviews" && (
         <div className="shopReviews">
+          
+       <TrustCard vendorId={shop.id} />
           {reviews.length === 0 && (
             <p style={{ textAlign: "center", color: "#888", padding: "2rem" }}>
               No reviews yet.

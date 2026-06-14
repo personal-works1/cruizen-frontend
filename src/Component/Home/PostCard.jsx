@@ -239,19 +239,21 @@ export default function PostCard({
   }, [recordView, viewCounted]);
 
   const goToProfile = () => {
-    if (post.author_type === "business") navigate(`/shop/${post.vendor_id}`);
-    else navigate(`/profile/${post.username}`);
-   
-    
-  };
+  if (post.author_type === "business") {
+    const slug = post.business_name?.toLowerCase().replace(/ /g, "-");
+    if (slug) navigate(`/shop/${slug}`);
+  } else {
+    navigate(`/profile/${post.username}`);
+  }
+};
 
   return (
     <div className="userPostFeed" ref={cardRef}>
       <div className="profileNview">
         <div>
           <UserAvatar
-            avatar_url={post.avatar_url}
-            size={40}
+           avatar_url={post.author_type === "business" ? (post.vendor_avatar_url || post.avatar_url) : post.avatar_url} 
+  size={40} 
             style={{ cursor: "pointer" }}
             onClick={goToProfile}
           />
@@ -260,7 +262,7 @@ export default function PostCard({
             style={{ cursor: "pointer", color: "var(--text-primary)" }}
             onClick={goToProfile}
           >
-            {post.name || post.username}
+         {post.author_type === "business" ? post.business_name : (post.name || post.username)}
             {post.author_type === "business" && (
               <span style={{
                 fontSize: "10px",
@@ -286,8 +288,9 @@ export default function PostCard({
       </div>
 
       <div className="postFeedActivity">
-        <p style={{ color: "var(--text-primary)" }}>{post.post_text}</p>
-
+        <p style={{ color: "var(--text-primary)", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+  {post.post_text}
+</p>
         {/* image — click opens lightbox */}
         {post.media_url && post.media_type === "image" && (
           <div

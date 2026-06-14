@@ -52,6 +52,7 @@ function NavBar() {
 
   // ── get mode and active identity from context ─────────────────────────
   const { mode, activeIdentity } = useMode();
+  
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -240,27 +241,23 @@ function NavBar() {
             end // ← only active on exact match
           >
             {({ isActive }) => (
-              <>
-                {isActive ? (
-                  <div
-                    style={{ border: "2px solid white", borderRadius: "50%" }}
-                  >
-                    <UserAvatar
-                      avatar_url={activeIdentity.avatar_url}
-                      size={36}
-                    />
-                  </div>
-                ) : (
-                  <UserAvatar
-                    avatar_url={activeIdentity.avatar_url}
-                    size={36}
-                  />
-                )}
-                <span className="linkName">
-                  {mode === "business" ? "Business" : "Profile"}
-                </span>
-              </>
-            )}
+  <>
+    <div style={{
+      borderRadius: "50%",
+      padding: "2px",
+      background: isActive ? "white" : "transparent",
+      display: "inline-flex",
+    }}>
+      <UserAvatar
+        avatar_url={mode === "business" ? activeIdentity.avatar_url : user?.avatar_url}
+        size={34}
+      />
+    </div>
+    <span className="linkName">
+      {mode === "business" ? "Business" : "Profile"}
+    </span>
+  </>
+)}
           </NavLink>
           )}
 

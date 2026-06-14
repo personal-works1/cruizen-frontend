@@ -71,14 +71,14 @@ function ReviewCard({ review }) {
   )
 }
 
-export default function TrustCard({ username }) {
+export default function TrustCard({ vendorId }) {
   const [data,    setData]    = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await axios.get(`${API_URL}/vendors/${username}/trust`)
+        const res = await axios.get(`${API_URL}/vendors/${vendorId}/trust`)
         setData(res.data)
       } catch (err) {
         console.error(err)
@@ -87,7 +87,7 @@ export default function TrustCard({ username }) {
       }
     }
     fetch()
-  }, [username])
+  }, [vendorId])
 
   if (loading) return (
     <div className="trustCard">

@@ -24,6 +24,7 @@ import { useMode } from "../Context/modeContext";
 import { API_URL } from "../Authentication/Authentication";
 import PostCard from "../Home/PostCard";
 import TrustCard from "./TrustCard";
+import ShopPage from "../Shop/ShopPage";
 import WinnerBadge from "../Leaderboard/WinnerBadge";
 
 // ── Profile cache (2-min TTL, keyed by username) ──────────────────────────────
@@ -268,10 +269,10 @@ function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
               <label>Location</label>
               <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Lagos, Nigeria" />
             </div>
-            <div className="field">
+             {/* <div className="field">
               <label>Website</label>
               <input name="website" value={form.website} onChange={handleChange} placeholder="https://yoursite.com" />
-            </div>
+            </div>  */}
           </>
         )}
 
@@ -544,7 +545,7 @@ function Profile() {
       setVendorProfile((prev) => ({ ...prev, ...updatedData }));
     } else {
       setProfileData((prev) => ({ ...prev, ...updatedData }));
-      if (me) login(token, { ...me, ...updatedData });
+      if (me) login(token, localStorage.getItem("refreshToken"), { ...me, ...updatedData });
     }
   };
 
@@ -568,7 +569,7 @@ function Profile() {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
         });
         setProfileData((prev) => ({ ...prev, avatar_url: res.data.avatar_url }));
-        login(token, { ...me, avatar_url: res.data.avatar_url });
+        login(token, localStorage.getItem("refreshToken"), { ...me, avatar_url: res.data.avatar_url });
       }
     } catch (err) {
       console.error("Avatar upload failed", err);
@@ -593,7 +594,7 @@ function Profile() {
       } else {
         await axios.delete(`${API_URL}/profile/avatar`, { headers: authHeader });
         setProfileData((prev) => ({ ...prev, avatar_url: null }));
-        login(token, { ...me, avatar_url: null });
+       login(token, localStorage.getItem("refreshToken"), { ...me, avatar_url: null });
       }
     } catch (err) {
       console.error(err);
@@ -666,14 +667,18 @@ function Profile() {
   };
 
   // ── Message ───────────────────────────────────────────────────────────
-  const handleMessage = async () => {
-    if (!token) { navigate("/usersignIn"); return; }
-    try {
-      const res = await axios.post(`${API_URL}/messages/conversation`,
-        { user2: profileData.id }, { headers: authHeader });
-      navigate("/messages", { state: { openConversation: res.data.conversation } });
-    } catch (err) { console.error(err); }
-  };
+ // In Profile.jsx, change handleMessage:
+const handleMessage = async () => {
+  if (!token) { navigate("/usersignIn"); return }
+  try {
+    const res = await axios.post(`${API_URL}/messages/conversation`,
+      { user2: profileData.id }, { headers: authHeader });
+    navigate("/messages", { state: { 
+      openConversation: res.data.conversation,
+      tab: "personal"  // ← explicitly set personal tab
+    }});
+  } catch (err) { console.error(err); }
+};
 
   // ── Post grid render helper ───────────────────────────────────────────
   const renderPostGrid = (items, emptyMsg) => (
@@ -695,7 +700,9 @@ function Profile() {
               style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           )}
           {(!post.media_url || post.media_type === "none") && (
-            <div className="textPostThumb"><p>{post.post_text}</p></div>
+            <div className="textPostThumb">
+  <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{post.post_text}</p>
+</div>
           )}
         </div>
       ))}
@@ -726,7 +733,28 @@ function Profile() {
   }
 
   if (!profileData)
-    return <p style={{ textAlign: "center", marginTop: "2rem" }}>User not found.</p>;
+  return <p style={{ textAlign: "center", marginTop: "2rem" }}>User not found.</p>;
+
+// ← ADD THIS:
+if (isBusinessView && vendorProfile) {
+  return (
+    <>
+      <ShopPage vendorId={vendorProfile.id} embedded />
+      <button
+        className="vendorBtn active"
+        onClick={switchMode}
+        style={{
+          position: "fixed", bottom: "80px", right: "16px",
+          zIndex: 999, display: "flex", alignItems: "center", gap: "6px"
+        }}
+      >
+        <StoreIcon sx={{ fontSize: 18 }} />
+        Switch to Personal
+      </button>
+    </>
+  )
+}
+
 
   return (
     <>
@@ -790,12 +818,12 @@ function Profile() {
                   {profileData.location}
                 </span>
               )}
-              {profileData.website && (
+              {/* {profileData.website && (
                 <a href={profileData.website} target="_blank" rel="noreferrer">
                   <LinkOutlinedIcon sx={{ fontSize: 16 }} />
                   {profileData.website}
                 </a>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -842,12 +870,12 @@ function Profile() {
               </button>
             )}
 
-            {isOwnProfile && (me?.role === "both" || me?.role === "vendor") && (
-              <button className="vendorBtn active" onClick={switchMode}>
-                <StoreIcon sx={{ fontSize: 18 }} />
-                {mode === "personal" ? "Switch to Business" : "Switch to Personal"}
-              </button>
-            )}
+{isOwnProfile && (me?.role === "both" || me?.role === "vendor") && (
+  <button className="vendorBtn active" onClick={switchMode}>
+    <StoreIcon sx={{ fontSize: 18 }} />
+    {mode === "personal" ? "Switch to Business" : "Switch to Personal"}
+  </button>
+)}
           </div>
 
           {/* ── Social links ── */}
@@ -882,7 +910,7 @@ function Profile() {
           {isOwnProfile &&
             (profileData.role === "vendor" || profileData.role === "both") &&
             mode === "business" && (
-              <TrustCard username={profileData.username} />
+             <TrustCard vendorId={vendorProfile?.id} />
             )}
 
           {/* ── Visit Shop button ── */}
