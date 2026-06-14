@@ -18,6 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .newMessageBtn {
@@ -31,10 +32,7 @@
   border-radius: 50%;
   transition: background 0.2s;
 }
-
-.newMessageBtn:hover {
-  background: #f5e6ff;
-}
+.newMessageBtn:hover { background: #f5e6ff; }
 
 /* ── search bar ── */
 .messagesSearchBar {
@@ -44,7 +42,8 @@
   background: var(--accent-light);
   border-radius: 20px;
   padding: 8px 14px;
-  margin: 1rem 1rem;
+  margin: 1rem;
+  flex-shrink: 0;
 }
 
 .messagesSearchInput {
@@ -55,10 +54,7 @@
   font-size: 14px;
   color: var(--text-primary, #2d002d);
 }
-
-.messagesSearchInput::placeholder {
-  color: #aaa;
-}
+.messagesSearchInput::placeholder { color: #aaa; }
 
 .messagesSearchClear {
   background: none;
@@ -69,7 +65,7 @@
   padding: 0;
 }
 
-/* ── conversation search bar ── */
+/* ── conversation in-chat search bar ── */
 .convSearchBtn {
   background: none;
   border: none;
@@ -88,7 +84,7 @@
   padding: 8px 1rem;
   background: var(--bg-secondary, #f5e6ff);
   border-bottom: 1px solid #e2a9f1;
-  flex-shrink: 0; /* FIX: never compress the search bar */
+  flex-shrink: 0;
 }
 
 .convSearchInput {
@@ -124,13 +120,8 @@
   align-items: center;
 }
 
-/* ── highlighted search results in messages ── */
-.messageBubble.searchMatch {
-  outline: 2px solid #e2a9f1;
-}
-.messageBubble.searchCurrent {
-  outline: 2px solid #61027b;
-}
+.messageBubble.searchMatch  { outline: 2px solid #e2a9f1; }
+.messageBubble.searchCurrent { outline: 2px solid #61027b; }
 
 .messagesHeader h2 {
   font-size: 1.2rem;
@@ -158,9 +149,13 @@
 
 /* ── Conversations List ── */
 .conversationsList {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
   display: flex;
   flex-direction: column;
 }
+.conversationsList::-webkit-scrollbar { display: none; }
 
 .conversationItem {
   display: flex;
@@ -171,14 +166,13 @@
   border-bottom: 1px solid var(--border, #e2a9f1);
   cursor: pointer;
   transition: background 0.2s;
+  flex-shrink: 0;
 }
-
-.conversationItem:hover {
-  background: var(--accent-light, #f5e6ff);
-}
-
-.conversationItem.unread {
-  background: var(--accent-light, #f5e6ff);
+.conversationItem:hover  { background: var(--accent-light, #f5e6ff); }
+.conversationItem.unread { background: var(--accent-light, #f5e6ff); }
+.conversationItem.active {
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
 }
 
 .convAvatar {
@@ -241,207 +235,6 @@
   flex-shrink: 0;
 }
 
-/* ── Conversation Page ── */
-.conversationPage {
-  background: var(--bg, #f5e6ff);
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  max-width: 600px;
-  margin: 0 auto;
-  overflow: hidden; /* FIX: contain children so flex layout works */
-}
-
-.convHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0.8rem 1rem;
-  background: var(--bg-card, #fff);
-  border-bottom: 1.5px solid var(--border, #e2a9f1);
-  position: sticky;
-  top: 10vh;
-  z-index: 10;
-  flex-shrink: 0; /* FIX: header never compresses */
-}
-
-.convHeaderInfo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.convHeaderName {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary, #2d002d);
-  margin: 0;
-}
-
-.convHeaderStatus {
-  font-size: 11px;
-  color: var(--text-secondary, #888);
-  margin: 0;
-}
-
-/* ── Messages List ── */
-.messagesList {
-  flex: 1;
-  min-height: 0; /* FIX: critical — allows flex child to shrink and scroll properly */
-  overflow-y: auto;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  scrollbar-width: none;
-}
-
-.messagesList::-webkit-scrollbar {
-  display: none;
-}
-
-.messageBubbleWrapper {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.messageBubbleWrapper.mine {
-  flex-direction: row-reverse;
-}
-
-.messageBubble {
-  max-width: 70%;
-  padding: 8px 12px;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column; /* FIX: always column so text + timestamp stack vertically */
-  gap: 2px;
-}
-
-.messageBubble.mine {
-  background: var(--accent, #61027b);
-  color: #fff;
-  border-bottom-right-radius: 4px;
-}
-
-.messageBubble.theirs {
-  background: var(--bg-card, #fff);
-  color: var(--text-primary, #2d002d);
-  border: 1.5px solid var(--border, #e2a9f1);
-  border-bottom-left-radius: 4px;
-}
-
-.messageBubble p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.4;
-  word-break: break-word;
-  white-space: pre-wrap; /* FIX: preserves newlines in message content */
-}
-
-.messageTime {
-  font-size: 10px;
-  opacity: 0.7;
-  align-self: flex-end;
-  flex-shrink: 0;
-}
-
-/* ── Typing Indicator ── */
-.typingBubble {
-  flex-direction: row !important;
-  gap: 4px !important;
-  align-items: center;
-  padding: 10px 14px !important;
-}
-
-.typingDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-mid, #e2a9f1);
-  animation: typingBounce 1.2s infinite;
-  flex-shrink: 0;
-}
-
-.typingDot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.typingDot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes typingBounce {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-6px);
-  }
-}
-
-/* ── Message Input ── */
-.messageInputRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0.8rem 1rem;
-  background: var(--bg-card, #fff);
-  border-top: 1.5px solid var(--border, #e2a9f1);
-  position: sticky;
-  bottom: 0;
-  flex-shrink: 0; /* FIX: input row never compresses */
-}
-
-.messageInput {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 24px;
-  border: 1.5px solid var(--border, #e2a9f1);
-  background: var(--bg, #f5e6ff);
-  color: var(--text-primary, #2d002d);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-  font-family: inherit;
-  resize: none; /* FIX: prevent manual resize handle */
-  overflow-y: auto;
-  max-height: 120px; /* FIX: cap height so it doesn't grow too tall on mobile */
-}
-
-.messageInput:focus {
-  border-color: var(--accent, #61027b);
-}
-
-.messageInput::placeholder {
-  color: var(--text-secondary, #888);
-}
-
-.messageSendBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent, #61027b);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  flex-shrink: 0;
-}
-
-.messageSendBtn:hover {
-  background: var(--accent-hover, #cb6ce6);
-}
-.messageSendBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 /* ── Instagram-style layout ── */
 .igLayout {
   display: flex;
@@ -461,15 +254,8 @@
   background: var(--bg-card);
 }
 
-.igLeft .conversationsList {
-  flex: 1;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-
 .igLeft .messagesHeader {
   top: 0;
-  position: sticky;
 }
 
 .igRight {
@@ -495,17 +281,184 @@
   font-size: 14px;
 }
 
+/* ── Conversation Page ── */
+/* KEY FIX: conversationPage fills igRight exactly using flex,
+   no fixed height — this prevents double-nesting height issues */
+.conversationPage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;           /* fill igRight */
+  min-height: 0;     /* allow flex children to shrink */
+  overflow: hidden;
+  background: var(--bg, #f5e6ff);
+}
+
 .igRight .conversationPage {
   max-width: 100%;
-  height: 100%;
   margin: 0;
 }
 
-/* ── active conversation highlight ── */
-.conversationItem.active {
-  background: var(--accent-light);
-  border-left: 3px solid var(--accent);
+/* ── Chat header ── */
+.convHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.8rem 1rem;
+  background: var(--bg-card, #fff);
+  border-bottom: 1.5px solid var(--border, #e2a9f1);
+  flex-shrink: 0; /* never compress */
+  z-index: 10;
 }
+
+.convHeaderInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.convHeaderName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #2d002d);
+  margin: 0;
+}
+
+.convHeaderStatus {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  margin: 0;
+}
+
+/* ── Messages List ── */
+/* KEY FIX: flex:1 + min-height:0 lets this grow to fill space
+   AND scroll. Without min-height:0 flex won't shrink and messages
+   overflow upward hidden */
+.messagesList {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: none;
+}
+.messagesList::-webkit-scrollbar { display: none; }
+
+.messageBubbleWrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.messageBubbleWrapper.mine { flex-direction: row-reverse; }
+
+.messageBubble {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column; /* always column: text on top, time below */
+  gap: 2px;
+}
+
+.messageBubble.mine {
+  background: var(--accent, #61027b);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.messageBubble.theirs {
+  background: var(--bg-card, #fff);
+  color: var(--text-primary, #2d002d);
+  border: 1.5px solid var(--border, #e2a9f1);
+  border-bottom-left-radius: 4px;
+}
+
+.messageBubble p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: pre-wrap; /* preserves newlines from multiline messages */
+}
+
+.messageTime {
+  font-size: 10px;
+  opacity: 0.7;
+  align-self: flex-end;
+  flex-shrink: 0;
+}
+
+/* ── Typing Indicator ── */
+.typingBubble {
+  flex-direction: row !important;
+  gap: 4px !important;
+  align-items: center;
+  padding: 10px 14px !important;
+}
+
+.typingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-mid, #e2a9f1);
+  animation: typingBounce 1.2s infinite;
+  flex-shrink: 0;
+}
+.typingDot:nth-child(2) { animation-delay: 0.2s; }
+.typingDot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%            { transform: translateY(-6px); }
+}
+
+/* ── Message Input Row ── */
+.messageInputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 1rem;
+  background: var(--bg-card, #fff);
+  border-top: 1.5px solid var(--border, #e2a9f1);
+  flex-shrink: 0; /* never compress */
+}
+
+.messageInput {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: 1.5px solid var(--border, #e2a9f1);
+  background: var(--bg, #f5e6ff);
+  color: var(--text-primary, #2d002d);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  resize: none;
+  overflow-y: auto;
+  max-height: 120px;
+  line-height: 1.4;
+}
+.messageInput:focus         { border-color: var(--accent, #61027b); }
+.messageInput::placeholder  { color: var(--text-secondary, #888); }
+
+.messageSendBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent, #61027b);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.messageSendBtn:hover    { background: var(--accent-hover, #cb6ce6); }
+.messageSendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ── Mode label ── */
 .messagesModeLabel {
@@ -538,22 +491,15 @@
   color: var(--text-secondary);
   transition: all 0.2s;
 }
-
 .messageTab.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   SKELETON / SHIMMER
-   ════════════════════════════════════════════════════════════════════════════ */
+/* ── Skeleton / Shimmer ── */
 @keyframes shimmer {
-  0% {
-    background-position: -600px 0;
-  }
-  100% {
-    background-position: 600px 0;
-  }
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
 }
 
 .shimmer {
@@ -567,85 +513,60 @@
   animation: shimmer 1.4s infinite linear;
 }
 
-.skelLine {
-  border-radius: 6px;
-  flex-shrink: 0;
-  display: block;
-}
+.skelLine   { border-radius: 6px; flex-shrink: 0; display: block; }
+.skelCircle { border-radius: 50%; flex-shrink: 0; }
 
-.skelCircle {
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   MOBILE  — max-width 768px
-   ════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   MOBILE  ≤ 768px
+   ════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* FIX: use dvh (dynamic viewport height) so browser address bar is
-     accounted for — prevents messages being hidden behind it */
+
+  /* dvh = dynamic viewport height, accounts for mobile browser chrome */
   .igLayout {
     height: 100dvh;
   }
 
+  .igLeft {
+    width: 100%;
+    min-width: 100%;
+    height: 100dvh;
+  }
+
+  /* Chat panel: fixed overlay covering the full screen */
   .igRight {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100dvh; /* FIX: dvh not vh */
+    height: 100dvh;
     z-index: 100;
+    flex-direction: column;
   }
 
-  .igLeft {
-    width: 100%;
-    min-width: 100%;
-  }
+  .igLeft.hidden-mobile   { display: none; }
+  .igRight.visible-mobile { display: flex; }
 
-  .igLeft.hidden-mobile {
-    display: none;
-  }
-
-  .igRight.visible-mobile {
-    display: flex;
-  }
-
-  .messagesPage,
+  /* conversationPage fills igRight exactly — no height:100vh here,
+     just flex:1 so it takes igRight's height naturally */
   .conversationPage {
-    max-width: 100%;
-    height: 100dvh; /* FIX: dvh not vh */
-  }
-
-  .messagesHeader {
-    top: 0;
-  }
-
-  .convHeader {
-    top: 0;
-    flex-shrink: 0;
-  }
-
-  /* FIX: ensure bubble content stays vertical on mobile */
-  .messageBubble {
-    flex-direction: column !important;
-  }
-
-  /* FIX: messagesList fills remaining space; min-height:0 is required
-     so the flex child can actually shrink and allow scrolling */
-  .messagesList {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
+    height: auto; /* let flex do the work, not a fixed height */
   }
 
-  .messageInputRow {
-    flex-shrink: 0;
-    /* FIX: ensure input stays above mobile browser bottom bar */
-    padding-bottom: max(0.8rem, env(safe-area-inset-bottom));
-  }
+  .messagesPage { max-width: 100%; }
 
+  .messagesHeader { top: 0; }
+  .convHeader     { top: 0; }
+
+  /* Prevent iOS auto-zoom on input focus (needs font-size >= 16px) */
   .messageInput {
-    font-size: 16px; /* FIX: prevents iOS auto-zoom on input focus */
+    font-size: 16px;
+  }
+
+  /* Safe area padding for iPhone home indicator */
+  .messageInputRow {
+    padding-bottom: max(0.8rem, env(safe-area-inset-bottom));
   }
 }

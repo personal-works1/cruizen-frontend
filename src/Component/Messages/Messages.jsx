@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../Context/AuthContext";
@@ -18,29 +18,17 @@ import "./Messages.css";
 // ── Skeleton components ───────────────────────────────────────────────────────
 function ConversationItemSkeleton() {
   return (
-    <div
-      className="conversationItem"
-      style={{ cursor: "default", pointerEvents: "none" }}
-    >
+    <div className="conversationItem" style={{ cursor: "default", pointerEvents: "none" }}>
       <div className="convAvatar">
         <div className="skelCircle shimmer" style={{ width: 48, height: 48 }} />
       </div>
       <div className="convInfo">
         <div className="convTopRow">
-          <div
-            className="skelLine shimmer"
-            style={{ width: "120px", height: "13px" }}
-          />
-          <div
-            className="skelLine shimmer"
-            style={{ width: "28px", height: "11px" }}
-          />
+          <div className="skelLine shimmer" style={{ width: "120px", height: "13px" }} />
+          <div className="skelLine shimmer" style={{ width: "28px", height: "11px" }} />
         </div>
         <div className="convBottomRow" style={{ marginTop: "6px" }}>
-          <div
-            className="skelLine shimmer"
-            style={{ width: "180px", height: "12px" }}
-          />
+          <div className="skelLine shimmer" style={{ width: "180px", height: "12px" }} />
         </div>
       </div>
     </div>
@@ -59,15 +47,9 @@ function ConversationListSkeleton() {
 
 function MessageBubbleSkeleton({ mine, wide }) {
   return (
-    <div
-      className={`messageBubbleWrapper ${mine ? "mine" : "theirs"}`}
-      style={{ pointerEvents: "none" }}
-    >
+    <div className={`messageBubbleWrapper ${mine ? "mine" : "theirs"}`} style={{ pointerEvents: "none" }}>
       {!mine && (
-        <div
-          className="skelCircle shimmer"
-          style={{ width: 28, height: 28, flexShrink: 0 }}
-        />
+        <div className="skelCircle shimmer" style={{ width: 28, height: 28, flexShrink: 0 }} />
       )}
       <div
         className="skelLine shimmer"
@@ -137,7 +119,7 @@ export default function Messages() {
 
   const isVendor = user?.role === "both" || user?.role === "vendor";
 
-  const [activeTab, setActiveTab] = useState(
+  const [activeTab] = useState(
     isVendor && location.state?.tab
       ? location.state.tab
       : isVendor && mode === "business"
@@ -153,10 +135,9 @@ export default function Messages() {
 
   const openConvRef = useRef(location.state?.openConversation || null);
   const openTabRef = useRef(location.state?.tab || null);
-
-  // ── fetch conversations ───────────────────────────────────────────────
   const refetchRef = useRef(0);
 
+  // ── fetch conversations ───────────────────────────────────────────────
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -179,7 +160,7 @@ export default function Messages() {
           const enriched = exists || conv;
           if (!exists) convList = [enriched, ...convList];
 
-          // FIX: small delay so mobile DOM is ready before panel switch
+          // small delay so mobile DOM is ready before panel switch
           setTimeout(() => {
             setActiveConvId(enriched.id);
             setActiveConv(enriched);
@@ -197,9 +178,7 @@ export default function Messages() {
     };
 
     fetchConversations();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user, activeTab, refetchRef.current]);
 
   // ── fetch messages when active conversation changes ───────────────────
@@ -359,16 +338,16 @@ export default function Messages() {
     }, 1500);
   };
 
-  // FIX: Enter key — only send on desktop (non-mobile), always allow newline on mobile
+  // FIX: Enter never sends — send button only.
+  // This means mobile Return key always creates a new line naturally.
+  // Desktop users use the send button or Ctrl+Enter if they prefer.
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (!isMobile) {
-        e.preventDefault();
-        handleSend();
-      }
-      // On mobile: Enter creates a new line naturally, send button handles sending
+    if (e.key === "Enter" && e.ctrlKey) {
+      // Optional: Ctrl+Enter sends on desktop for power users
+      e.preventDefault();
+      handleSend();
     }
+    // All other Enter presses (plain or shift) create a new line — no send
   };
 
   const goToResult = (direction) => {
@@ -448,14 +427,10 @@ export default function Messages() {
           <SearchIcon sx={{ fontSize: 18, color: "var(--text-secondary)" }} />
           <input
             type="text"
-            placeholder={
-              showNewMessage ? "Search users..." : "Search conversations..."
-            }
+            placeholder={showNewMessage ? "Search users..." : "Search conversations..."}
             value={showNewMessage ? userSearch : search}
             onChange={(e) =>
-              showNewMessage
-                ? setUserSearch(e.target.value)
-                : setSearch(e.target.value)
+              showNewMessage ? setUserSearch(e.target.value) : setSearch(e.target.value)
             }
             className="messagesSearchInput"
           />
@@ -510,13 +485,9 @@ export default function Messages() {
 
               {!loading && filtered.length === 0 && (
                 <div className="messagesEmpty">
-                  <ChatOutlinedIcon
-                    sx={{ fontSize: 48, color: "var(--accent-mid)" }}
-                  />
+                  <ChatOutlinedIcon sx={{ fontSize: 48, color: "var(--accent-mid)" }} />
                   {search ? (
-                    <p>
-                      No conversations found for "<strong>{search}</strong>"
-                    </p>
+                    <p>No conversations found for "<strong>{search}</strong>"</p>
                   ) : (
                     <p>No conversations yet.</p>
                   )}
@@ -550,9 +521,7 @@ export default function Messages() {
                       <div className="convTopRow">
                         <p className="convName">{conv.other_name}</p>
                         <span className="convTime">
-                          {conv.last_message_at
-                            ? formatTime(conv.last_message_at)
-                            : ""}
+                          {conv.last_message_at ? formatTime(conv.last_message_at) : ""}
                         </span>
                       </div>
                       <div className="convBottomRow">
@@ -560,9 +529,7 @@ export default function Messages() {
                           {conv.last_message || "Say hello!"}
                         </p>
                         {conv.unread_count > 0 && (
-                          <span className="convUnreadBadge">
-                            {conv.unread_count}
-                          </span>
+                          <span className="convUnreadBadge">{conv.unread_count}</span>
                         )}
                       </div>
                     </div>
@@ -579,9 +546,7 @@ export default function Messages() {
       >
         {!activeConvId ? (
           <div className="igRightPlaceholder">
-            <ChatOutlinedIcon
-              sx={{ fontSize: 64, color: "var(--accent-mid)" }}
-            />
+            <ChatOutlinedIcon sx={{ fontSize: 64, color: "var(--accent-mid)" }} />
             <p>Select a conversation to start chatting</p>
           </div>
         ) : (
@@ -604,33 +569,17 @@ export default function Messages() {
 
               {msgLoading && !activeConv ? (
                 <div className="convHeaderInfo">
-                  <div
-                    className="skelCircle shimmer"
-                    style={{ width: 38, height: 38 }}
-                  />
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                  >
-                    <div
-                      className="skelLine shimmer"
-                      style={{ width: 100, height: 13 }}
-                    />
-                    <div
-                      className="skelLine shimmer"
-                      style={{ width: 60, height: 11 }}
-                    />
+                  <div className="skelCircle shimmer" style={{ width: 38, height: 38 }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    <div className="skelLine shimmer" style={{ width: 100, height: 13 }} />
+                    <div className="skelLine shimmer" style={{ width: 60, height: 11 }} />
                   </div>
                 </div>
               ) : (
                 activeConv && (
                   <div className="convHeaderInfo">
-                    <div
-                      style={{ position: "relative", display: "inline-block" }}
-                    >
-                      <UserAvatar
-                        avatar_url={activeConv.other_avatar}
-                        size={38}
-                      />
+                    <div style={{ position: "relative", display: "inline-block" }}>
+                      <UserAvatar avatar_url={activeConv.other_avatar} size={38} />
                       {isOnline && (
                         <CircleIcon
                           sx={{
@@ -651,9 +600,7 @@ export default function Messages() {
                         {isOnline
                           ? "Online"
                           : activeConv.other_last_seen
-                          ? `Last seen ${new Date(
-                              activeConv.other_last_seen
-                            ).toLocaleTimeString("en-NG", {
+                          ? `Last seen ${new Date(activeConv.other_last_seen).toLocaleTimeString("en-NG", {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}`
@@ -694,18 +641,8 @@ export default function Messages() {
                 )}
                 {searchResults.length > 1 && (
                   <>
-                    <button
-                      className="convSearchNav"
-                      onClick={() => goToResult("up")}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      className="convSearchNav"
-                      onClick={() => goToResult("down")}
-                    >
-                      ↓
-                    </button>
+                    <button className="convSearchNav" onClick={() => goToResult("up")}>↑</button>
+                    <button className="convSearchNav" onClick={() => goToResult("down")}>↓</button>
                   </>
                 )}
                 {searchText && searchResults.length === 0 && (
@@ -731,11 +668,8 @@ export default function Messages() {
               <div className="messagesList">
                 {messages.map((msg) => {
                   const isMine = msg.sender_id === user.id;
-                  const isHighlight = searchResults.some(
-                    (r) => r.id === msg.id
-                  );
-                  const isCurrent =
-                    searchResults[searchIndex]?.id === msg.id;
+                  const isHighlight = searchResults.some((r) => r.id === msg.id);
+                  const isCurrent = searchResults[searchIndex]?.id === msg.id;
                   return (
                     <div
                       key={msg.id}
@@ -747,29 +681,17 @@ export default function Messages() {
                       )}
                       <div
                         className={`messageBubble ${isMine ? "mine" : "theirs"} ${
-                          isCurrent
-                            ? "searchCurrent"
-                            : isHighlight
-                            ? "searchMatch"
-                            : ""
+                          isCurrent ? "searchCurrent" : isHighlight ? "searchMatch" : ""
                         }`}
                       >
-                        {/* FIX: pre-wrap preserves newlines typed on desktop */}
-                        <p
-                          style={{
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {searchText
-                            ? highlight(msg.content, searchText)
-                            : msg.content}
+                        <p>
+                          {searchText ? highlight(msg.content, searchText) : msg.content}
                         </p>
                         <span className="messageTime">
-                          {new Date(msg.created_at).toLocaleTimeString(
-                            "en-NG",
-                            { hour: "2-digit", minute: "2-digit" }
-                          )}
+                          {new Date(msg.created_at).toLocaleTimeString("en-NG", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       </div>
                     </div>
@@ -792,13 +714,12 @@ export default function Messages() {
             <div className="messageInputRow">
               <textarea
                 className="messageInput"
-                placeholder="Send message..."
+                placeholder="Message..."
                 value={input}
                 onChange={handleTyping}
                 onKeyDown={handleKeyDown}
                 rows={1}
-                // FIX: hints mobile keyboard to show a newline key, not "Send"
-                enterKeyHint="enter"
+                enterKeyHint="send"
               />
               <button
                 className="messageSendBtn"
