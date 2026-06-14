@@ -83,7 +83,6 @@ function MessageBubbleSkeleton({ mine, wide }) {
 }
 
 function ChatSkeleton() {
-  // Alternating pattern of mine/theirs bubbles
   const pattern = [
     { mine: false, wide: true },
     { mine: true, wide: false },
@@ -110,7 +109,7 @@ export default function Messages() {
   const { socket, onlineUsers } = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
-  const { mode } = useMode()
+  const { mode } = useMode();
 
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -136,77 +135,83 @@ export default function Messages() {
   const typingTimeoutRef = useRef(null);
   const messageRefs = useRef({});
 
-  const isVendor = user?.role === "both" || user?.role === "vendor"
+  const isVendor = user?.role === "both" || user?.role === "vendor";
 
-const [activeTab, setActiveTab] = useState(
-  (isVendor && location.state?.tab) ? location.state.tab :
-  (isVendor && mode === "business") ? "business" : "personal"
-)
+  const [activeTab, setActiveTab] = useState(
+    isVendor && location.state?.tab
+      ? location.state.tab
+      : isVendor && mode === "business"
+      ? "business"
+      : "personal"
+  );
+
   useEffect(() => {
     if (!user) navigate("/auth");
   }, [user]);
 
   if (!user) return null;
 
-
-
   const openConvRef = useRef(location.state?.openConversation || null);
   const openTabRef = useRef(location.state?.tab || null);
 
   // ── fetch conversations ───────────────────────────────────────────────
-const refetchRef = useRef(0)
+  const refetchRef = useRef(0);
 
-useEffect(() => {
-  if (!user) return
-  let cancelled = false
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
 
-  const fetch = async () => {
-    setLoading(true)
-    try {
-      const token = await getValidToken()
-      const res = await axios.get(
-  `${API_URL}/messages/conversations?type=${activeTab}`,
-  { headers: { Authorization: `Bearer ${token}` } }
-)
-      if (cancelled) return
+    const fetchConversations = async () => {
+      setLoading(true);
+      try {
+        const token = await getValidToken();
+        const res = await axios.get(
+          `${API_URL}/messages/conversations?type=${activeTab}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (cancelled) return;
 
-      let convList = res.data.conversations
+        let convList = res.data.conversations;
 
-      if (openConvRef.current && (openTabRef.current === activeTab || !isVendor)) {
-  const conv = openConvRef.current
-  const exists = convList.find(c => c.id === conv.id)
-  const enriched = exists || conv
-  if (!exists) convList = [enriched, ...convList]
-  setActiveConvId(enriched.id)
-  setActiveConv(enriched)
-  openConvRef.current = null
-}
+        if (openConvRef.current) {
+          const conv = openConvRef.current;
+          const exists = convList.find((c) => c.id === conv.id);
+          const enriched = exists || conv;
+          if (!exists) convList = [enriched, ...convList];
 
-      setConversations(convList)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      if (!cancelled) setLoading(false)
-    }
-  }
+          // FIX: small delay so mobile DOM is ready before panel switch
+          setTimeout(() => {
+            setActiveConvId(enriched.id);
+            setActiveConv(enriched);
+          }, 50);
 
-  fetch()
-  return () => { cancelled = true }
-}, [user, activeTab, refetchRef.current])
+          openConvRef.current = null;
+        }
 
+        setConversations(convList);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
 
-
+    fetchConversations();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, activeTab, refetchRef.current]);
 
   // ── fetch messages when active conversation changes ───────────────────
   useEffect(() => {
     if (!activeConvId) return;
-    const fetch = async () => {
+    const fetchMessages = async () => {
       setMsgLoading(true);
       try {
         const token = await getValidToken();
         const res = await axios.get(
           `${API_URL}/messages/conversations/${activeConvId}/messages`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setMessages(res.data.messages);
       } catch (err) {
@@ -215,7 +220,7 @@ useEffect(() => {
         setMsgLoading(false);
       }
     };
-    fetch();
+    fetchMessages();
   }, [activeConvId]);
 
   // ── socket ────────────────────────────────────────────────────────────
@@ -278,7 +283,7 @@ useEffect(() => {
         const token = await getValidToken();
         const res = await axios.get(
           `${API_URL}/search?q=${userSearch}&type=users`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setUserResults(res.data.users || []);
       } catch (err) {
@@ -306,7 +311,7 @@ useEffect(() => {
       const res = await axios.post(
         `${API_URL}/messages/conversation`,
         { user2: userId },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const conv = res.data.conversation;
       setConversations((prev) => {
@@ -354,6 +359,18 @@ useEffect(() => {
     }, 1500);
   };
 
+  // FIX: Enter key — only send on desktop (non-mobile), always allow newline on mobile
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (!isMobile) {
+        e.preventDefault();
+        handleSend();
+      }
+      // On mobile: Enter creates a new line naturally, send button handles sending
+    }
+  };
+
   const goToResult = (direction) => {
     const next =
       direction === "up"
@@ -383,7 +400,7 @@ useEffect(() => {
         </mark>
       ) : (
         part
-      ),
+      )
     );
   };
 
@@ -422,40 +439,10 @@ useEffect(() => {
             <EditIcon sx={{ fontSize: 20 }} />
           </button>
         </div>
+
         <div className="messagesModeLabel">
-  {mode === "business" ? "🏪 Shop DM" : "💬 Personal DM"}
-</div>
-       {/* {isVendor && mode === "personal" && (
-  // <div className="messageTabBar">
-  //   <button
-  //     className={`messageTab ${activeTab === "personal" ? "active" : ""}`}
-  //     onClick={() => {
-  //       setActiveTab("personal")
-  //       setActiveConvId(null)
-  //       setActiveConv(null)
-  //       setMessages([])
-  //       setConversations([])
-  //       setLoading(true)
-  //     }}
-  //   >
-  //     DM
-  //   </button>
-  //   <button
-  //     className={`messageTab ${activeTab === "business" ? "active" : ""}`}
-  //     onClick={() => {
-  //       setActiveTab("business")
-  //       setActiveConvId(null)
-  //       setActiveConv(null)
-  //       setMessages([])
-  //       setConversations([])
-  //       setLoading(true)
-  //     }}
-  //   >
-  //     Shop DM
-  //   </button>
-  // </div>
-)} */}
-        
+          {mode === "business" ? "🏪 Shop DM" : "💬 Personal DM"}
+        </div>
 
         <div className="messagesSearchBar">
           <SearchIcon sx={{ fontSize: 18, color: "var(--text-secondary)" }} />
@@ -519,7 +506,6 @@ useEffect(() => {
           {/* ── existing conversations ── */}
           {!showNewMessage && (
             <>
-              {/* skeleton while loading */}
               {loading && <ConversationListSkeleton />}
 
               {!loading && filtered.length === 0 && (
@@ -602,21 +588,20 @@ useEffect(() => {
           <div className="conversationPage">
             {/* ── chat header ── */}
             <div className="convHeader">
-             <button
-  className="backBtn"
-  onClick={() => {
-    openConvRef.current = null
-    openTabRef.current = null
-    setActiveConvId(null)
-    setActiveConv(null)
-    setMessages([])
-    refetchRef.current += 1  // ← triggers useEffect to re-run
-  }}
->
-  <ArrowBackIcon sx={{ fontSize: 20 }} />
-</button>
+              <button
+                className="backBtn"
+                onClick={() => {
+                  openConvRef.current = null;
+                  openTabRef.current = null;
+                  setActiveConvId(null);
+                  setActiveConv(null);
+                  setMessages([]);
+                  refetchRef.current += 1;
+                }}
+              >
+                <ArrowBackIcon sx={{ fontSize: 20 }} />
+              </button>
 
-              {/* header: skeleton while loading messages, real info otherwise */}
               {msgLoading && !activeConv ? (
                 <div className="convHeaderInfo">
                   <div
@@ -666,13 +651,13 @@ useEffect(() => {
                         {isOnline
                           ? "Online"
                           : activeConv.other_last_seen
-                            ? `Last seen ${new Date(
-                                activeConv.other_last_seen,
-                              ).toLocaleTimeString("en-NG", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}`
-                            : "Offline"}
+                          ? `Last seen ${new Date(
+                              activeConv.other_last_seen
+                            ).toLocaleTimeString("en-NG", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}`
+                          : "Offline"}
                       </p>
                     </div>
                   </div>
@@ -739,7 +724,7 @@ useEffect(() => {
               </div>
             )}
 
-            {/* ── messages list: skeleton while loading, real messages otherwise ── */}
+            {/* ── messages list ── */}
             {msgLoading ? (
               <ChatSkeleton />
             ) : (
@@ -747,9 +732,10 @@ useEffect(() => {
                 {messages.map((msg) => {
                   const isMine = msg.sender_id === user.id;
                   const isHighlight = searchResults.some(
-                    (r) => r.id === msg.id,
+                    (r) => r.id === msg.id
                   );
-                  const isCurrent = searchResults[searchIndex]?.id === msg.id;
+                  const isCurrent =
+                    searchResults[searchIndex]?.id === msg.id;
                   return (
                     <div
                       key={msg.id}
@@ -764,10 +750,11 @@ useEffect(() => {
                           isCurrent
                             ? "searchCurrent"
                             : isHighlight
-                              ? "searchMatch"
-                              : ""
+                            ? "searchMatch"
+                            : ""
                         }`}
                       >
+                        {/* FIX: pre-wrap preserves newlines typed on desktop */}
                         <p
                           style={{
                             whiteSpace: "pre-wrap",
@@ -781,10 +768,7 @@ useEffect(() => {
                         <span className="messageTime">
                           {new Date(msg.created_at).toLocaleTimeString(
                             "en-NG",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
+                            { hour: "2-digit", minute: "2-digit" }
                           )}
                         </span>
                       </div>
@@ -811,14 +795,10 @@ useEffect(() => {
                 placeholder="Send message..."
                 value={input}
                 onChange={handleTyping}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                  // Shift+Enter now inserts a newline naturally
-                }}
+                onKeyDown={handleKeyDown}
                 rows={1}
+                // FIX: hints mobile keyboard to show a newline key, not "Send"
+                enterKeyHint="enter"
               />
               <button
                 className="messageSendBtn"
