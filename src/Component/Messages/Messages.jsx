@@ -278,7 +278,7 @@ export default function Messages() {
   const openConversation = (conv) => {
     setActiveConvId(conv.id);
     setActiveConv(conv);
-    setMessages([]);
+    // setMessages([]);
     setShowNewMessage(false);
     setShowSearch(false);
     setSearchText("");
@@ -307,19 +307,30 @@ export default function Messages() {
     }
   };
 
-  const handleSend = () => {
-    if (!input.trim() || !socket) return;
-    socket.emit("send_message", {
-      conversation_id: activeConvId,
-      sender_id: user.id,
-      content: input,
-    });
-    setInput("");
-    socket.emit("stop_typing", {
-      conversation_id: activeConvId,
-      userId: user.id,
-    });
+ const handleSend = () => {
+  if (!input.trim() || !socket) return;
+  
+  // optimistically add to UI immediately
+  const optimisticMsg = {
+    id: Date.now(), // temp id
+    conversation_id: activeConvId,
+    sender_id: user.id,
+    content: input,
+    created_at: new Date().toISOString(),
+    avatar_url: user.avatar_url,
+    name: user.name,
+    username: user.username,
   };
+  setMessages((prev) => [...prev, optimisticMsg]);
+  
+  socket.emit("send_message", {
+    conversation_id: activeConvId,
+    sender_id: user.id,
+    content: input,
+  });
+  setInput("");
+  socket.emit("stop_typing", { conversation_id: activeConvId, userId: user.id });
+};
 
   const handleTyping = (e) => {
     setInput(e.target.value);
