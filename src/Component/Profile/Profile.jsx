@@ -390,7 +390,7 @@ function CartGrid({ isOwnProfile, isVendor }) {
 function Profile() {
   const { username } = useParams();
   const navigate = useNavigate();
-  const { token, user: me, login, getValidToken, loading: authLoading } = useAuth();
+ const { token, user: me, login, getValidToken, loading: authLoading, refreshUser } = useAuth();
   const { mode, activeIdentity, vendorProfile, setVendorProfile, switchMode } = useMode();
 
   const [profileData, setProfileData]         = useState(null);
@@ -654,17 +654,36 @@ function Profile() {
   const handleVendorChange = (e) =>
     setVendorForm({ ...vendorForm, [e.target.name]: e.target.value });
 
-  const handleVendorSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`${API_URL}/vendors/create`, vendorForm, { headers: authHeader });
-      login(token, { ...me, role: "both", businessName: response.data.vendor.business_name });
-      setShowVendorModal(false);
-      alert("Business profile created!");
-    } catch (err) {
-      alert(err.response?.data?.error || "Something went wrong");
-    }
-  };
+ // AFTER
+const handleVendorSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    // Create the vendor profile
+    const response = await axios.post(
+      `${API_URL}/vendors/create`,
+      vendorForm,
+      { headers: authHeader }
+    );
+
+    // Fix: refreshUser re-fetches user from DB (role is now 'both')
+    // ModeContext watches `user` and will auto-fetch vendor profile
+    await refreshUser();
+
+    // Seed vendorProfile into ModeContext immediately so the UI
+    // doesn't wait for the next render cycle
+    setVendorProfile(response.data.vendor);
+
+    setShowVendorModal(false);
+    setVendorForm({
+      business_name: "", business_email: "",
+      business_category: "", business_description: "",
+    });
+
+    alert("Business profile created! Switch to Business mode to see your shop.");
+  } catch (err) {
+    alert(err.response?.data?.error || "Something went wrong");
+  }
+};
 
   // ── Message ───────────────────────────────────────────────────────────
  // In Profile.jsx, change handleMessage:

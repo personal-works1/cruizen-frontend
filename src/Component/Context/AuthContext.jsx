@@ -58,8 +58,8 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    const storedToken   = localStorage.getItem("token")
-    const storedUser    = localStorage.getItem("user")
+    const storedToken = localStorage.getItem("token")
+    const storedUser  = localStorage.getItem("user")
 
     // ── clean up bad values left by old login calls ───────────────────
     if (storedUser === "undefined" || storedUser === "null") {
@@ -90,19 +90,39 @@ export function AuthProvider({ children }) {
     init()
   }, [refreshAccessToken])
 
- const login = (token, refreshToken, user) => {
-  if (!token || !user) {
-    console.error("login() called with missing token or user", { token, user })
-    return
+  const login = (token, refreshToken, user) => {
+    if (!token || !user) {
+      console.error("login() called with missing token or user", { token, user })
+      return
+    }
+    localStorage.setItem("token", token)
+    localStorage.setItem("refreshToken", refreshToken || "")
+    localStorage.setItem("user", JSON.stringify(user))
+    localStorage.removeItem("mode")
+    setToken(token)
+    setUser(user)
   }
-  console.log("login() updating user to:", user) // ← add this
-  localStorage.setItem("token", token)
-  localStorage.setItem("refreshToken", refreshToken || "")
-  localStorage.setItem("user", JSON.stringify(user))
-  localStorage.removeItem("mode")
-  setToken(token)
-  setUser(user)
-}
+
+  // ── refreshUser — re-fetch the latest user object from the server ────
+  // call this after any action that changes the user's role or profile
+  // (e.g. after creating a vendor account, updating profile info)
+  // ModeContext watches `user` and will automatically re-fetch vendor
+  // profile when it sees role change to 'both'
+  const refreshUser = useCallback(async () => {
+    const currentToken = localStorage.getItem("token")
+    if (!currentToken) return
+
+    try {
+      const res = await axios.get(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${currentToken}` }
+      })
+      const updatedUser = res.data.user  // adjust key if your endpoint returns differently
+      localStorage.setItem("user", JSON.stringify(updatedUser))
+      setUser(updatedUser)
+    } catch (err) {
+      console.error("refreshUser failed:", err)
+    }
+  }, [])
 
   const getValidToken = useCallback(async () => {
     const current = localStorage.getItem("token")
@@ -113,7 +133,7 @@ export function AuthProvider({ children }) {
   }, [refreshAccessToken])
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading, getValidToken }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading, getValidToken, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )
