@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { useAuth } from "../Context/AuthContext"
@@ -17,7 +17,97 @@ import YouTubeIcon from "@mui/icons-material/YouTube"
 import XIcon from "@mui/icons-material/X"
 import MusicNoteIcon from "@mui/icons-material/MusicNote"
 import GraphicEqIcon from "@mui/icons-material/GraphicEq"
+import CloseIcon from "@mui/icons-material/Close"
+import AddAPhotoIcon from "@mui/icons-material/AddAPhoto"
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined"
 import "./ShopPage.css"
+
+function ShopEditForm({ shop, onSave, onClose }) {
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    business_name:        shop.business_name        || "",
+    business_description: shop.business_description || "",
+    whatsapp:             shop.whatsapp             || "",
+    instagram:            shop.instagram            || "",
+    tiktok:               shop.tiktok               || "",
+    youtube:              shop.youtube              || "",
+    x_twitter:            shop.x_twitter            || "",
+    spotify:              shop.spotify              || "",
+    other_1_url:          shop.other_1_url          || "",
+    other_1_label:        shop.other_1_label        || "",
+    other_2_url:          shop.other_2_url          || "",
+    other_2_label:        shop.other_2_label        || "",
+  })
+
+  const handleChange = (e) =>
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+
+  const handleSubmit = async () => {
+    setSaving(true)
+    await onSave(form)
+    setSaving(false)
+  }
+
+  return (
+    <>
+      <div className="field">
+        <label>Business Name</label>
+        <input name="business_name" value={form.business_name} onChange={handleChange} />
+      </div>
+      <div className="field">
+        <label>Description</label>
+        <textarea name="business_description" value={form.business_description}
+          onChange={handleChange} rows={3}
+          placeholder="Tell customers what you sell..." />
+      </div>
+
+      <div style={{
+        borderTop: "1px solid var(--border)", margin: "12px 0 8px",
+        paddingTop: "8px", fontSize: "13px", color: "#888", fontWeight: 600,
+      }}>
+        Social Links
+      </div>
+
+      {[
+        { name: "whatsapp",  label: "WhatsApp",    placeholder: "https://wa.me/234..." },
+        { name: "instagram", label: "Instagram",   placeholder: "https://instagram.com/..." },
+        { name: "tiktok",    label: "TikTok",      placeholder: "https://tiktok.com/@..." },
+        { name: "youtube",   label: "YouTube",     placeholder: "https://youtube.com/..." },
+        { name: "x_twitter", label: "X (Twitter)", placeholder: "https://x.com/..." },
+        { name: "spotify",   label: "Spotify",     placeholder: "https://open.spotify.com/..." },
+      ].map(({ name, label, placeholder }) => (
+        <div className="field" key={name}>
+          <label>{label}</label>
+          <input name={name} value={form[name]} onChange={handleChange} placeholder={placeholder} />
+        </div>
+      ))}
+
+      <div className="field">
+        <label>Other Link 1 — Label</label>
+        <input name="other_1_label" value={form.other_1_label} onChange={handleChange} placeholder="e.g. My Podcast" />
+      </div>
+      <div className="field">
+        <label>Other Link 1 — URL</label>
+        <input name="other_1_url" value={form.other_1_url} onChange={handleChange} placeholder="https://..." />
+      </div>
+      <div className="field">
+        <label>Other Link 2 — Label</label>
+        <input name="other_2_label" value={form.other_2_label} onChange={handleChange} placeholder="e.g. My Linktree" />
+      </div>
+      <div className="field">
+        <label>Other Link 2 — URL</label>
+        <input name="other_2_url" value={form.other_2_url} onChange={handleChange} placeholder="https://..." />
+      </div>
+
+      <div className="modalBtns">
+        <button className="cancelBtn" onClick={onClose}>Cancel</button>
+        <button className="submitBtn" onClick={handleSubmit} disabled={saving}>
+          {saving ? "Saving..." : "Save"}
+        </button>
+      </div>
+    </>
+  )
+}
 
 export default function ShopPage({ vendorId: propVendorId, embedded = false }) {
   const { slug }          = useParams()
@@ -33,7 +123,9 @@ export default function ShopPage({ vendorId: propVendorId, embedded = false }) {
   const [following,     setFollowing]     = useState(false)
   const [followPending, setFollowPending] = useState(false)
   const [shopFollowers, setShopFollowers] = useState(0)
-
+ const shopAvatarInputRef = useRef(null)
+const [avatarUploading, setAvatarUploading] = useState(false)
+const [showEditModal, setShowEditModal] = useState(false)
  useEffect(() => {
     const fetch = async () => {
       try {
@@ -115,6 +207,70 @@ const handleMessage = async () => {
     })
   } catch (err) { console.error(err) }
 }
+
+
+const handleShopAvatarUpload = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  setAvatarUploading(true)
+  try {
+    const token = await getValidToken()
+    const formData = new FormData()
+    formData.append("avatar", file)
+    const res = await axios.post(`${API_URL}/vendors/avatar`, formData, {
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+    })
+    setShop((prev) => ({ ...prev, avatar_url: res.data.avatar_url }))
+  } catch (err) {
+    alert(err.response?.data?.error || "Upload failed")
+  } finally {
+    setAvatarUploading(false)
+    shopAvatarInputRef.current.value = ""
+  }
+}
+
+const handleShopAvatarDelete = async () => {
+  if (!window.confirm("Remove shop profile picture?")) return
+  try {
+    const token = await getValidToken()
+    await axios.delete(`${API_URL}/vendors/avatar`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    setShop((prev) => ({ ...prev, avatar_url: null }))
+  } catch (err) {
+    alert("Failed to remove photo")
+  }
+}
+
+const handleShopSave = async (updatedData) => {
+  try {
+    const token = await getValidToken()
+    const headers = { Authorization: `Bearer ${token}` }
+
+    await axios.put(`${API_URL}/vendors/update`, {
+      business_name: updatedData.business_name,
+      business_description: updatedData.business_description,
+    }, { headers })
+
+    await axios.put(`${API_URL}/vendors/social-links`, {
+      whatsapp:      updatedData.whatsapp,
+      instagram:     updatedData.instagram,
+      tiktok:        updatedData.tiktok,
+      youtube:       updatedData.youtube,
+      x_twitter:     updatedData.x_twitter,
+      spotify:       updatedData.spotify,
+      other_1_url:   updatedData.other_1_url,
+      other_1_label: updatedData.other_1_label,
+      other_2_url:   updatedData.other_2_url,
+      other_2_label: updatedData.other_2_label,
+    }, { headers })
+
+    setShop((prev) => ({ ...prev, ...updatedData }))
+    setShowEditModal(false)
+  } catch (err) {
+    alert(err.response?.data?.error || "Save failed")
+  }
+}
   // ── generate shop slug for sharing ───────────────────────────────────
   const shopSlug = shop?.business_username ||
     shop?.business_name?.toLowerCase().replace(/ /g, "-")
@@ -161,21 +317,60 @@ const handleMessage = async () => {
 
       {/* ── Shop Identity ── */}
       <div className="shopIdentity">
-        <div className="shopAvatarWrap">
-          {/* ── business avatar — no personal avatar ever shown ── */}
-          <UserAvatar avatar_url={shop.avatar_url} size={90} />
-        </div>
+      <div className="shopAvatarWrap" style={{ position: "relative" }}>
+  <UserAvatar avatar_url={shop.avatar_url} size={90} />
+
+  {embedded && user?.id === shop.user_id && (
+    <div className="avatarActions">
+      <button
+        className="avatarUploadBtn"
+        onClick={() => shopAvatarInputRef.current.click()}
+        disabled={avatarUploading}
+        title="Change photo"
+      >
+        {avatarUploading ? "..." : <AddAPhotoIcon sx={{ fontSize: 16 }} />}
+      </button>
+      {shop.avatar_url && (
+        <button
+          className="avatarDeleteBtn"
+          onClick={handleShopAvatarDelete}
+          title="Remove photo"
+        >
+          <CloseIcon sx={{ fontSize: 16 }} />
+        </button>
+      )}
+    </div>
+  )}
+
+  <input
+    ref={shopAvatarInputRef}
+    type="file"
+    accept="image/*"
+    hidden
+    onChange={handleShopAvatarUpload}
+  />
+</div>
 
         <div className="shopInfo">
-          <div className="shopNameRow">
-            <h2 className="shopName">
-              {shop.business_name}
-              {/* ── verified badge ── */}
-              {shop.is_verified && (
-                <VerifiedIcon sx={{ fontSize: 18, color: "#61027b", marginLeft: "6px" }} />
-              )}
-            </h2>
-          </div>
+         <div className="shopNameRow">
+  <h2 className="shopName">
+    {shop.business_name}
+    {shop.is_verified && (
+      <VerifiedIcon sx={{ fontSize: 18, color: "#61027b", marginLeft: "6px" }} />
+    )}
+  </h2>
+  {embedded && user?.id === shop.user_id && (
+    <button
+      onClick={() => setShowEditModal(true)}
+      style={{
+        background: "none", border: "none", cursor: "pointer",
+        color: "#61027b", padding: "4px",
+      }}
+    >
+      <EditOutlinedIcon sx={{ fontSize: 20 }} />
+    </button>
+  )}
+</div>
 
           {/* ── category tag ── */}
           <p className="shopCategory">
@@ -360,6 +555,23 @@ const handleMessage = async () => {
           ))}
         </div>
       )}
+      {showEditModal && (
+  <div
+    className="modalOverlay"
+    onClick={(e) => e.target === e.currentTarget && setShowEditModal(false)}
+  >
+    <div className="modalBox">
+      <div className="modalTopRow">
+        <h2>Edit Business</h2>
+        <button className="modalCloseBtn" onClick={() => setShowEditModal(false)}>
+          <CloseIcon fontSize="small" />
+        </button>
+      </div>
+
+      <ShopEditForm shop={shop} onSave={handleShopSave} onClose={() => setShowEditModal(false)} />
+    </div>
+  </div>
+)}
 
     </div>
   )

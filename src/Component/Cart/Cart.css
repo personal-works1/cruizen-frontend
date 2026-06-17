@@ -261,6 +261,7 @@
   height: 52vh;
   width: 100%;
   overflow-x: auto;
+  overflow-y: visible;  /* ← add this */
   scrollbar-width: none;
   display: flex;
   align-items: center;
@@ -281,19 +282,19 @@
   border: 1.5px solid var(--border);
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.2s;
+  overflow: visible;
 }
 
 .cartCard:hover {
   box-shadow: 0 4px 16px rgba(97, 2, 123, 0.15);
   transform: translateY(-2px);
 }
-
-.cartOwner {
+.cartOwnerCartPage {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;  /* ← change from hidden */
   margin-bottom: 0.5em;
 }
 
@@ -301,7 +302,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  overflow: hidden;
+  overflow: visible;  /* ← change from hidden */
 }
 
 .UserandRatings p {

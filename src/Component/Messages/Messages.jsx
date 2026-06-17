@@ -206,9 +206,16 @@ export default function Messages() {
   useEffect(() => {
     if (!socket || !activeConvId) return;
     socket.emit("join_conversation", activeConvId);
-    socket.on("new_message", (message) => {
-      setMessages((prev) => [...prev, message]);
-    });
+   socket.on("new_message", (message) => {
+  setMessages((prev) => {
+    // If this is our own message coming back, replace the optimistic one
+    if (message.tempId) {
+      return prev.map((m) => m.id === message.tempId ? message : m);
+    }
+    // Otherwise it's from the other person — append normally
+    return [...prev, message];
+  });
+});
     socket.on("user_typing", ({ userId }) => {
       if (userId !== user.id) setOtherTyping(true);
     });
@@ -307,27 +314,33 @@ export default function Messages() {
     }
   };
 
- const handleSend = () => {
-  if (!input.trim() || !socket) return;
-  
-  // optimistically add to UI immediately
+const handleSend = () => {
+  const trimmed = input.replace(/\n+$/, "").replace(/^\n+/, "") // trim leading & trailing newlines only
+  if (!trimmed || !socket) return;
+
+  const tempId = `temp_${Date.now()}`;
+
   const optimisticMsg = {
-    id: Date.now(), // temp id
+    id: tempId,
     conversation_id: activeConvId,
     sender_id: user.id,
-    content: input,
+    content: trimmed,  // ← use trimmed
     created_at: new Date().toISOString(),
     avatar_url: user.avatar_url,
     name: user.name,
     username: user.username,
+    isPending: true,
   };
+
   setMessages((prev) => [...prev, optimisticMsg]);
-  
+
   socket.emit("send_message", {
     conversation_id: activeConvId,
     sender_id: user.id,
-    content: input,
+    content: trimmed,  // ← use trimmed
+    tempId,
   });
+
   setInput("");
   socket.emit("stop_typing", { conversation_id: activeConvId, userId: user.id });
 };
