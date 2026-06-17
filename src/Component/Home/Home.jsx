@@ -641,10 +641,10 @@ useEffect(() => {
             {trending.trending_posts.map((post) => (
               <div key={post.id} className="trends" onClick={() => navigate(`/post/${post.id}`)} style={{ cursor: "pointer" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                  <UserAvatar avatar_url={post.avatar_url} size={28} />
+                  <UserAvatar avatar_url={post.display_avatar} size={28} />
                   <div>
-                    <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{post.name}</p>
-                    <p style={{ fontSize: "11px", color: "var(--text-secondary)", margin: 0 }}>@{post.username}</p>
+                    <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{post.display_name}</p>
+                    <p style={{ fontSize: "11px", color: "var(--text-secondary)", margin: 0 }}>{post.display_username}</p>
                   </div>
                 </div>
                 <p style={{
