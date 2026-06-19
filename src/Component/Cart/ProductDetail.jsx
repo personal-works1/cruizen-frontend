@@ -234,11 +234,14 @@ const handleBuy = async () => {
       ? `/shop/${product.business_name.toLowerCase().replace(/ /g, "-")}`
       : `/profile/${product.username}`
   )}>
-            <UserAvatar avatar_url={product.avatar_url} size={44} />
+    
+
+
+           <UserAvatar avatar_url={product.display_avatar_url} size={44} variant="vendor" />
             <div className="sellerInfo">
-              <strong>{product.business_name || product.seller_name}</strong>
-              <span>@{product.username}</span>
-              <span className="sellerCategory">{product.business_category}</span>
+              <strong>{product.business_name}</strong>
+              <span>{product.username}</span>
+             <span className="sellerCategory">{product.business_category}</span>
             </div>
             <StorefrontOutlinedIcon sx={{ color: "#61027b", marginLeft: "auto" }} />
           </div>

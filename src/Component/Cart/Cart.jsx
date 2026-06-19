@@ -638,9 +638,9 @@ function ProductCard({ product, onDeleted }) {
             flex: 1,
           }}
         >
-          <UserAvatar avatar_url={product.avatar_url} size={40} />
+          <UserAvatar avatar_url={product.display_avatar_url} size={40} variant="vendor" />
           <div className="UserandRatings">
-            <p>{product.business_name || product.username}</p>
+          <p>{product.business_name}</p>
             <p className="productRating">
               <StarIcon sx={{ fontSize: 14, color: "#f5a623" }} />
               {product.avg_rating

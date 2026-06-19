@@ -24,6 +24,9 @@ function ReelItem({ video, index, isActive, muted, onMuteToggle, onLike, onRepos
   const { user: me } = useAuth()
   const [paused, setPaused] = useState(false)
 
+  const displayName   = video.author_type === "business" ? video.business_name : video.username
+const displayAvatar = video.author_type === "business" ? video.business_avatar_url : video.avatar_url
+
   // ── Bug #1 + #3: play/pause entirely driven by isActive ─────────────────
   useEffect(() => {
     const vid = videoRef.current
@@ -56,6 +59,15 @@ function ReelItem({ video, index, isActive, muted, onMuteToggle, onLike, onRepos
       setPaused(true)
     }
   }
+const goToProfile = () => {
+  if (video.author_type === "business") {
+    const slug = video.business_name?.toLowerCase().replace(/ /g, "-")
+    if (slug) navigate(`/shop/${slug}`)
+  } else {
+    navigate(`/profile/${video.username}`)
+  }
+}
+
 
   return (
     <div className="reelItem" data-index={index}>
@@ -87,10 +99,10 @@ function ReelItem({ video, index, isActive, muted, onMuteToggle, onLike, onRepos
       {/* ── MOBILE ONLY: everything floats on video ── */}
       <div className="reelMobileOverlay">
         <div className="reelOverlay">
-          <div className="reelUserInfo" onClick={() => navigate(`/profile/${video.username}`)}>
-            <UserAvatar avatar_url={video.avatar_url} size={36} />
+          <div className="reelUserInfo" onClick={goToProfile}>
+            <UserAvatar avatar_url={displayAvatar} size={36} />
             <div>
-              <p className="reelUsername">@{video.username}</p>
+              <p className="reelUsername">{displayName}</p>
               {video.post_text && (
                 <p className="reelCaption">
                   {video.post_text?.slice(0, 60)}{video.post_text?.length > 60 ? "..." : ""}
@@ -132,10 +144,10 @@ function ReelItem({ video, index, isActive, muted, onMuteToggle, onLike, onRepos
 
       {/* ── DESKTOP ONLY ── */}
       <div className="reelDesktopLeft">
-        <div className="reelDesktopUser" onClick={() => navigate(`/profile/${video.username}`)}>
-          <UserAvatar avatar_url={video.avatar_url} size={44} />
+        <div className="reelDesktopUser" onClick={goToProfile}>
+          <UserAvatar avatar_url={displayAvatar} size={44} />
           <div>
-            <p className="reelUsername">@{video.username}</p>
+            <p className="reelUsername">{displayName}</p>
             {video.post_text && (
               <p className="reelCaption">
                 {video.post_text?.slice(0, 60)}{video.post_text?.length > 60 ? "..." : ""}

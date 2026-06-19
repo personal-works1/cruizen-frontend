@@ -87,6 +87,8 @@ function MiniCarousel({ products }) {
   }, [products.length])
 
   if (products.length === 0) return null
+  console.log(products);
+  
 
   return (
     <div className="mini-carousel">
@@ -107,8 +109,8 @@ function MiniCarousel({ products }) {
             }
             <div className="overlay">
               <div className="user">
-                <UserAvatar avatar_url={item.avatar_url} size={32} />
-                <span>{item.business_name || item.username}</span>
+                <UserAvatar avatar_url={item.display_avatar_url} size={32} />
+                <span>{item.business_name}</span>
               </div>
               <div style={{ fontSize: "12px", color: "#fff", fontWeight: 700 }}>
                 ₦{Number(item.price).toLocaleString()}
@@ -462,6 +464,7 @@ useEffect(() => {
       ))
     } catch (err) { console.error(err) }
   }
+  
 
 
   // ── RENDER ────────────────────────────────────────────────────────────────
@@ -480,7 +483,10 @@ useEffect(() => {
             )}
             {topVendors.map((v) => (
               <div className="vendorAcc" key={v.id}>
-                <div className="vendorProfileAccount" onClick={() => navigate(`/shop/${v.id}`)} style={{ cursor: "pointer" }}>
+                <div className="vendorProfileAccount" onClick={() => {
+  const slug = v.business_name?.toLowerCase().replace(/ /g, "-")
+  if (slug) navigate(`/shop/${slug}`)
+}} style={{ cursor: "pointer" }}>
                   <UserAvatar avatar_url={v.avatar_url} size={42} />
                   <div>
                     <p className="pUsername" style={{ fontWeight: 600, fontSize: "13px", margin: 0, display: "flex", alignItems: "center", gap: "3px" }}>

@@ -247,12 +247,24 @@ export default function PostCard({
   }
 };
 
+const displayAvatar = post.author_type === "business"
+  ? (post.vendor_avatar_url || post.display_avatar || null)
+  : post.avatar_url
+
+const displayName = post.author_type === "business"
+  ? post.business_name
+  : (post.name || post.username)
+
+const displayUsername = post.author_type === "business"
+  ? post.business_name
+  : post.username
+
   return (
     <div className="userPostFeed" ref={cardRef}>
       <div className="profileNview">
         <div>
           <UserAvatar
-           avatar_url={post.author_type === "business" ? (post.vendor_avatar_url || post.avatar_url) : post.avatar_url} 
+           avatar_url={displayAvatar}
   size={40} 
             style={{ cursor: "pointer" }}
             onClick={goToProfile}
@@ -262,7 +274,7 @@ export default function PostCard({
             style={{ cursor: "pointer", color: "var(--text-primary)" }}
             onClick={goToProfile}
           >
-         {post.author_type === "business" ? post.business_name : (post.name || post.username)}
+         {displayName}
             {post.author_type === "business" && (
               <span style={{
                 fontSize: "10px",

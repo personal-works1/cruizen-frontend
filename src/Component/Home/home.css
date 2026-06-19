@@ -236,7 +236,7 @@
 /* ── Mini Carousel ── */
 .mini-carousel {
   width: 100%;
-  height: 100%;
+  height: 82%;
   overflow: hidden;
   border-radius: 16px;
   position: relative;
@@ -262,7 +262,7 @@
 .overlay {
   position: absolute;
   inset: 0;
-  height: 75%;
+  height: 90%;
   background: rgba(97, 2, 123, 0.4);
   display: flex;
   flex-direction: column;

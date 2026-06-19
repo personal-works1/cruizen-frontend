@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import './Search.css';
+import "./Search.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import SearchSharpIcon from "@mui/icons-material/SearchSharp";
@@ -25,14 +25,22 @@ function getDiscoverCache() {
     const raw = sessionStorage.getItem(DISCOVER_CACHE_KEY);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > DISCOVER_TTL) { sessionStorage.removeItem(DISCOVER_CACHE_KEY); return null; }
+    if (Date.now() - ts > DISCOVER_TTL) {
+      sessionStorage.removeItem(DISCOVER_CACHE_KEY);
+      return null;
+    }
     return data;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function setDiscoverCache(data) {
   try {
-    sessionStorage.setItem(DISCOVER_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    sessionStorage.setItem(
+      DISCOVER_CACHE_KEY,
+      JSON.stringify({ data, ts: Date.now() }),
+    );
   } catch {}
 }
 
@@ -52,20 +60,43 @@ function LuckyPickSkeleton() {
     <div className="luckyPickContainer">
       <SkelBox w="80px" h={16} style={{ marginBottom: 8 }} />
       <div className="carouselWrapper">
-        <div style={{ width: 32, height: 32, borderRadius: "50%" }} className="skelLine" />
+        <div
+          style={{ width: 32, height: 32, borderRadius: "50%" }}
+          className="skelLine"
+        />
         <div className="cart-Card" style={{ flex: 1 }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
             <div className="skelCircle" style={{ width: 24, height: 24 }} />
             <SkelBox w="60%" h={12} />
           </div>
-          <div className="skelLine" style={{ width: "100%", height: 120, borderRadius: 8 }} />
-          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 5 }}>
+          <div
+            className="skelLine"
+            style={{ width: "100%", height: 120, borderRadius: 8 }}
+          />
+          <div
+            style={{
+              marginTop: 8,
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+            }}
+          >
             <SkelBox w="70%" h={13} />
             <SkelBox w="40%" h={14} />
             <SkelBox w="30%" h={11} />
           </div>
         </div>
-        <div style={{ width: 32, height: 32, borderRadius: "50%" }} className="skelLine" />
+        <div
+          style={{ width: 32, height: 32, borderRadius: "50%" }}
+          className="skelLine"
+        />
       </div>
     </div>
   );
@@ -78,7 +109,11 @@ function VideosGridSkeleton() {
       <SkelBox w="60px" h={16} style={{ marginBottom: 10 }} />
       <div className="videosGrid">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="skelLine" style={{ borderRadius: 8, height: 120 }} />
+          <div
+            key={i}
+            className="skelLine"
+            style={{ borderRadius: 8, height: 120 }}
+          />
         ))}
       </div>
     </div>
@@ -91,7 +126,11 @@ function TrendingSkeleton() {
     <div className="trending-Section">
       <SkelBox w="70px" h={16} style={{ marginBottom: 10 }} />
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="trendCard" style={{ gap: 8, pointerEvents: "none" }}>
+        <div
+          key={i}
+          className="trendCard"
+          style={{ gap: 8, pointerEvents: "none" }}
+        >
           <SkelBox w="90%" h={13} />
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <div className="skelCircle" style={{ width: 20, height: 20 }} />
@@ -107,51 +146,83 @@ function TrendingSkeleton() {
 function CartCard({ product }) {
   const navigate = useNavigate();
   if (!product) return null;
+
   return (
-    <div className="cart-Card" onClick={() => navigate(`/product/${product.id}`)} style={{ cursor: "pointer" }}>
+    <div
+      className="cart-Card"
+      onClick={() => navigate(`/product/${product.id}`)}
+      style={{ cursor: "pointer" }}
+    >
       <div className="cartOwner">
-        <UserAvatar avatar_url={product.avatar_url} size={24} />
+        <UserAvatar
+          avatar_url={product.display_avatar_url}
+          size={24}
+          variant="vendor"
+        />
         <div className="UserandRatings">
-          <p>{product.business_name || product.username}</p>
-          <p style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 11 }}>
+          <p>{product.business_name}</p>
+          <p
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              fontSize: 11,
+            }}
+          >
             <StarIcon sx={{ fontSize: 12, color: "#f5a623" }} />
-            {product.avg_rating > 0 ? Number(product.avg_rating).toFixed(1) : "New"}
+            {product.avg_rating > 0
+              ? Number(product.avg_rating).toFixed(1)
+              : "New"}
           </p>
         </div>
       </div>
       <div className="goodsImage">
         {product.image_url && (
-          <img src={product.image_url} alt={product.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
+          <img
+            src={product.image_url}
+            alt={product.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "8px",
+            }}
+          />
         )}
       </div>
       <div className="goodsInfo">
         <p className="about">{product.name}</p>
         <p className="Price">₦{Number(product.price).toLocaleString()}</p>
         {product.fake_price && (
-          <p className="fakePrice">₦{Number(product.fake_price).toLocaleString()}</p>
+          <p className="fakePrice">
+            ₦{Number(product.fake_price).toLocaleString()}
+          </p>
         )}
         <p className="UnitLeft">{product.units_left} units left</p>
       </div>
     </div>
   );
 }
-
 // ── LuckyPick ─────────────────────────────────────────────────────────────────
 function LuckyPick({ products, loading }) {
   const [current, setCurrent] = useState(0);
-  const prev = () => setCurrent(i => (i === 0 ? products.length - 1 : i - 1));
-  const next = () => setCurrent(i => (i === products.length - 1 ? 0 : i + 1));
+  const prev = () => setCurrent((i) => (i === 0 ? products.length - 1 : i - 1));
+  const next = () => setCurrent((i) => (i === products.length - 1 ? 0 : i + 1));
 
   if (loading) return <LuckyPickSkeleton />;
 
-  if (!products || products.length === 0) return (
-    <div className="luckyPickContainer">
-      <h2 className="sectionTitle">Lucky Pick</h2>
-      <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>No products available yet.</p>
-      <NavLink to="/Cart" className="seeMoreLink">See Marketplace →</NavLink>
-    </div>
-  );
+  if (!products || products.length === 0)
+    return (
+      <div className="luckyPickContainer">
+        <h2 className="sectionTitle">Lucky Pick</h2>
+        <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+          No products available yet.
+        </p>
+        <NavLink to="/Cart" className="seeMoreLink">
+          See Marketplace →
+        </NavLink>
+      </div>
+    );
 
   return (
     <div className="luckyPickContainer">
@@ -165,7 +236,9 @@ function LuckyPick({ products, loading }) {
           <ArrowForwardIosIcon sx={{ fontSize: 16 }} />
         </button>
       </div>
-      <NavLink to="/Cart" className="seeMoreLink">See more on Marketplace →</NavLink>
+      <NavLink to="/Cart" className="seeMoreLink">
+        See more on Marketplace →
+      </NavLink>
     </div>
   );
 }
@@ -176,30 +249,41 @@ function VideosGrid({ videos, loading }) {
 
   if (loading) return <VideosGridSkeleton />;
 
-  if (!videos || videos.length === 0) return (
-    <div className="videosSection">
-      <h2 className="sectionTitle">Videos</h2>
-      <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>No videos yet.</p>
-    </div>
-  );
+  if (!videos || videos.length === 0)
+    return (
+      <div className="videosSection">
+        <h2 className="sectionTitle">Videos</h2>
+        <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
+          No videos yet.
+        </p>
+      </div>
+    );
 
   return (
     <div className="videosSection">
       <h2 className="sectionTitle">Videos</h2>
       <div className="videosGrid">
         {videos.map((v) => (
-          <div key={v.id} className="videoCard" onClick={() => navigate(`/reels/${v.id}`)}>
+          <div
+            key={v.id}
+            className="videoCard"
+            onClick={() => navigate(`/reels/${v.id}`)}
+          >
             <video
               src={v.media_url}
               muted
               playsInline
               style={{
-                width: "100%", height: "100%",
-                objectFit: "cover", borderRadius: "0.5em",
-                pointerEvents: "none"
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "0.5em",
+                pointerEvents: "none",
               }}
             />
-            <div className="videoOverlay"><span>▶</span></div>
+            <div className="videoOverlay">
+              <span>▶</span>
+            </div>
           </div>
         ))}
       </div>
@@ -227,8 +311,8 @@ function Trending({ items, loading }) {
             {item.post_text?.slice(0, 60)}{item.post_text?.length > 60 ? "..." : ""}
           </p>
           <div className="trendFooter">
-            <UserAvatar avatar_url={item.avatar_url} size={20} />
-            <span>@{item.username} · ❤️ {item.likes_count} · 💬 {item.comments_count}</span>
+            <UserAvatar avatar_url={item.display_avatar} size={20} />
+            <span>{item.display_name} · ❤️ {item.likes_count} · 💬 {item.comments_count}</span>
           </div>
         </div>
       ))}
@@ -237,8 +321,9 @@ function Trending({ items, loading }) {
 }
 
 // ── UserCard ──────────────────────────────────────────────────────────────────
-function UserCard({ user, authHeader, onFollowToggle }) {
+function UserCard({ user, onFollowToggle }) {
   const navigate = useNavigate();
+  const { getValidToken } = useAuth();
   const [pending, setPending] = useState(false);
 
   const handleFollow = async (e) => {
@@ -247,10 +332,12 @@ function UserCard({ user, authHeader, onFollowToggle }) {
     if (pending) return;
     setPending(true);
     try {
+      const token = await getValidToken();
+      const headers = { Authorization: `Bearer ${token}` };
       if (user.is_following) {
-        await axios.delete(`${API_URL}/profile/${user.username}/follow`, { headers: authHeader });
+        await axios.delete(`${API_URL}/profile/${user.username}/follow`, { headers });
       } else {
-        await axios.post(`${API_URL}/profile/${user.username}/follow`, {}, { headers: authHeader });
+        await axios.post(`${API_URL}/profile/${user.username}/follow`, {}, { headers });
       }
       onFollowToggle(user.id);
     } catch (err) { console.error(err); }
@@ -258,17 +345,24 @@ function UserCard({ user, authHeader, onFollowToggle }) {
   };
 
   return (
-    <div className="userResultCard" onClick={() => navigate(`/Profile/${user.username}`)}>
+    <div
+      className="userResultCard"
+      onClick={() => navigate(`/Profile/${user.username}`)}
+    >
       <UserAvatar avatar_url={user.avatar_url} size={40} />
       <div className="userResultInfo">
         <strong>{user.name}</strong>
         <span>@{user.username}</span>
         {user.bio && <p className="userResultBio">{user.bio}</p>}
-        <span className="userResultFollowers">{user.followers_count} followers</span>
+        <span className="userResultFollowers">
+          {user.followers_count} followers
+        </span>
       </div>
       <button
         className={`searchFollowBtn ${user.is_following ? "following" : ""}`}
-        onClick={handleFollow} disabled={pending}>
+        onClick={handleFollow}
+        disabled={pending}
+      >
         {user.is_following ? "Unfollow" : "Follow"}
       </button>
     </div>
@@ -278,8 +372,8 @@ function UserCard({ user, authHeader, onFollowToggle }) {
 // ── SearchDropdown ────────────────────────────────────────────────────────────
 function SearchDropdown({ results, query, onSelect, onClose }) {
   const navigate = useNavigate();
-  const { users, posts, trending, hashtags } = results;
-  const hasResults = users?.length || posts?.length || trending?.length || hashtags?.length;
+  const { users, vendors, posts, trending, hashtags } = results
+ const hasResults = users?.length || vendors?.length || posts?.length || trending?.length || hashtags?.length;
 
   if (!hasResults) return (
     <div className="searchDropdown">
@@ -289,7 +383,7 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
 
   return (
     <div className="searchDropdown">
-      {users?.length > 0 && (
+        {users?.length > 0 && (
         <div className="dropdownSection">
           <p className="dropdownLabel"><AccountCircleIcon sx={{ fontSize: 14 }} /> People</p>
           {users.map((u) => (
@@ -304,46 +398,88 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
           ))}
         </div>
       )}
-
-      {hashtags?.length > 0 && (
+      {vendors?.length > 0 && (
         <div className="dropdownSection">
-          <p className="dropdownLabel"><TagIcon sx={{ fontSize: 14 }} /> Hashtags</p>
-          {hashtags.map((h, i) => (
-            <div key={i} className="dropdownItem"
-              onClick={() => { onSelect(h.tag); onClose(); }}>
-              <div className="dropdownHashIcon">#</div>
-              <div className="dropdownItemText"><strong>{h.tag}</strong></div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {trending?.length > 0 && (
-        <div className="dropdownSection">
-          <p className="dropdownLabel"><WhatshotIcon sx={{ fontSize: 14 }} /> Trending</p>
-          {trending.map((t) => (
-            <div key={t.id} className="dropdownItem"
-              onClick={() => { onSelect(t.post_text); onClose(); }}>
-              <WhatshotIcon sx={{ fontSize: 28, color: "#ff6b35" }} />
+          <p className="dropdownLabel"><i className="ti ti-building-store" style={{ fontSize: 14 }} /> Businesses</p>
+          {vendors.map((v) => (
+            <div key={v.id} className="dropdownItem"
+              onClick={() => {
+                const slug = v.business_name.toLowerCase().replace(/ /g, "-")
+                navigate(`/shop/${slug}`)
+                onClose()
+              }}>
+              <UserAvatar avatar_url={v.avatar_url} size={32} variant="vendor" />
               <div className="dropdownItemText">
-                <strong>{t.post_text?.slice(0, 50)}{t.post_text?.length > 50 ? "..." : ""}</strong>
-                <span>@{t.username} · ❤️ {t.likes_count}</span>
+                <strong>{v.business_name}</strong>
+                <span>{v.business_category}</span>
               </div>
             </div>
           ))}
         </div>
       )}
 
+      {hashtags?.length > 0 && (
+        <div className="dropdownSection">
+          <p className="dropdownLabel">
+            <TagIcon sx={{ fontSize: 14 }} /> Hashtags
+          </p>
+          {hashtags.map((h, i) => (
+            <div
+              key={i}
+              className="dropdownItem"
+              onClick={() => {
+                onSelect(h.tag);
+                onClose();
+              }}
+            >
+              <div className="dropdownHashIcon">#</div>
+              <div className="dropdownItemText">
+                <strong>{h.tag}</strong>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+{trending?.length > 0 && (
+  <div className="dropdownSection">
+    <p className="dropdownLabel"><WhatshotIcon sx={{ fontSize: 14 }} /> Trending</p>
+    {trending.map((t) => (
+      <div key={t.id} className="dropdownItem"
+        onClick={() => { onSelect(t.post_text); onClose(); }}>
+        {/* <WhatshotIcon sx={{ fontSize: 28, color: "#ff6b35" }} /> */}
+        <div className="dropdownItemText">
+          <strong>{t.post_text?.slice(0, 50)}{t.post_text?.length > 50 ? "..." : ""}</strong>
+          <span>{t.business_name}  {t.likes_count}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
       {posts?.length > 0 && (
         <div className="dropdownSection">
-          <p className="dropdownLabel"><ArticleOutlinedIcon sx={{ fontSize: 14 }} /> Posts</p>
+          <p className="dropdownLabel">
+            <ArticleOutlinedIcon sx={{ fontSize: 14 }} /> Posts
+          </p>
           {posts.map((p) => (
-            <div key={p.id} className="dropdownItem"
-              onClick={() => { onSelect(p.post_text); onClose(); }}>
-              <ArticleOutlinedIcon sx={{ fontSize: 28, color: "var(--border)" }} />
+            <div
+              key={p.id}
+              className="dropdownItem"
+              onClick={() => {
+                onSelect(p.post_text);
+                onClose();
+              }}
+            >
+              {/* <ArticleOutlinedIcon
+                sx={{ fontSize: 28, color: "var(--border)" }}
+              /> */}
               <div className="dropdownItemText">
-                <strong>{p.post_text?.slice(0, 50)}{p.post_text?.length > 50 ? "..." : ""}</strong>
-                <span>@{p.username}</span>
+                <strong>
+                  {p.post_text?.slice(0, 50)}
+                  {p.post_text?.length > 50 ? "..." : ""}
+                </strong>
+                {/* <span>@{p.username}</span> */}
               </div>
             </div>
           ))}
@@ -358,20 +494,20 @@ function Search() {
   const { getValidToken, user } = useAuth();
   const navigate = useNavigate();
 
-  const [query,        setQuery]        = useState("");
-  const [searching,    setSearching]    = useState(false);
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [dropdown,     setDropdown]     = useState({});
-  const [users,        setUsers]        = useState([]);
-  const [posts,        setPosts]        = useState([]);
-  const [videos,       setVideos]       = useState([]);
-  const [trending,     setTrending]     = useState([]);
-  const [products,     setProducts]     = useState([]);
-  const [hasSearched,  setHasSearched]  = useState(false);
+  const [dropdown, setDropdown] = useState({});
+  const [users, setUsers] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [trending, setTrending] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
   const [discoverLoading, setDiscoverLoading] = useState(true);
 
   const debounceRef = useRef(null);
-  const wrapperRef  = useRef(null);
+  const wrapperRef = useRef(null);
 
   // ── discover + cache ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -388,7 +524,9 @@ function Search() {
       // 2. revalidate in background
       try {
         let token = null;
-        try { token = await getValidToken(); } catch {}
+        try {
+          token = await getValidToken();
+        } catch {}
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         const [discoverRes, productsRes, trendingRes] = await Promise.all([
@@ -397,7 +535,9 @@ function Search() {
           axios.get(`${API_URL}/posts/trending`, { headers }),
         ]);
 
-        const flat = Object.values(productsRes.data.products).flat().sort(() => Math.random() - 0.5);
+        const flat = Object.values(productsRes.data.products)
+          .flat()
+          .sort(() => Math.random() - 0.5);
         const freshTrending = trendingRes.data.trending_posts;
 
         setVideos(discoverRes.data.videos);
@@ -420,20 +560,28 @@ function Search() {
 
   // ── debounced autocomplete ─────────────────────────────────────────────────
   useEffect(() => {
-    if (!query.trim()) { setShowDropdown(false); setDropdown({}); return; }
+    if (!query.trim()) {
+      setShowDropdown(false);
+      setDropdown({});
+      return;
+    }
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
         let token = null;
-        try { token = await getValidToken(); } catch {}
+        try {
+          token = await getValidToken();
+        } catch {}
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const res = await axios.get(
           `${API_URL}/search/autocomplete?q=${encodeURIComponent(query)}`,
-          { headers }
+          { headers },
         );
         setDropdown(res.data.results);
         setShowDropdown(true);
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error(err);
+      }
     }, 300);
     return () => clearTimeout(debounceRef.current);
   }, [query]);
@@ -459,23 +607,34 @@ function Search() {
       const token = await getValidToken();
       const res = await axios.get(
         `${API_URL}/search?q=${encodeURIComponent(query)}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setUsers(res.data.users);
       setPosts(res.data.posts);
       setVideos(res.data.videos);
       setTrending(res.data.trending);
       setHasSearched(true);
-    } catch (err) { console.error(err); }
-    finally { setSearching(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSearching(false);
+    }
   };
 
   const handleFollowToggle = (userId) => {
-    setUsers(prev => prev.map(u =>
-      u.id === userId
-        ? { ...u, is_following: !u.is_following, followers_count: u.is_following ? u.followers_count - 1 : u.followers_count + 1 }
-        : u
-    ));
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              is_following: !u.is_following,
+              followers_count: u.is_following
+                ? u.followers_count - 1
+                : u.followers_count + 1,
+            }
+          : u,
+      ),
+    );
   };
 
   const handleLikeToggle = async (post) => {
@@ -487,12 +646,20 @@ function Search() {
       liked
         ? await axios.delete(`${API_URL}/posts/${post.id}/like`, { headers })
         : await axios.post(`${API_URL}/posts/${post.id}/like`, {}, { headers });
-      setPosts(prev => prev.map(p =>
-        p.id === post.id
-          ? { ...p, liked_by_me: !liked, likes_count: liked ? p.likes_count - 1 : p.likes_count + 1 }
-          : p
-      ));
-    } catch (err) { console.error(err); }
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id
+            ? {
+                ...p,
+                liked_by_me: !liked,
+                likes_count: liked ? p.likes_count - 1 : p.likes_count + 1,
+              }
+            : p,
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleRepostToggle = async (post) => {
@@ -502,13 +669,27 @@ function Search() {
       const headers = { Authorization: `Bearer ${token}` };
       reposted
         ? await axios.delete(`${API_URL}/posts/${post.id}/repost`, { headers })
-        : await axios.post(`${API_URL}/posts/${post.id}/repost`, {}, { headers });
-      setPosts(prev => prev.map(p =>
-        p.id === post.id
-          ? { ...p, reposted_by_me: !reposted, reposts_count: reposted ? p.reposts_count - 1 : p.reposts_count + 1 }
-          : p
-      ));
-    } catch (err) { console.error(err); }
+        : await axios.post(
+            `${API_URL}/posts/${post.id}/repost`,
+            {},
+            { headers },
+          );
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id
+            ? {
+                ...p,
+                reposted_by_me: !reposted,
+                reposts_count: reposted
+                  ? p.reposts_count - 1
+                  : p.reposts_count + 1,
+              }
+            : p,
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleBookmarkToggle = async (post) => {
@@ -517,19 +698,34 @@ function Search() {
       const token = await getValidToken();
       const headers = { Authorization: `Bearer ${token}` };
       bookmarked
-        ? await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, { headers })
-        : await axios.post(`${API_URL}/posts/${post.id}/bookmark`, {}, { headers });
-      setPosts(prev => prev.map(p =>
-        p.id === post.id
-          ? { ...p, bookmarked_by_me: !bookmarked, bookmarks_count: bookmarked ? p.bookmarks_count - 1 : p.bookmarks_count + 1 }
-          : p
-      ));
-    } catch (err) { console.error(err); }
+        ? await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, {
+            headers,
+          })
+        : await axios.post(
+            `${API_URL}/posts/${post.id}/bookmark`,
+            {},
+            { headers },
+          );
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id
+            ? {
+                ...p,
+                bookmarked_by_me: !bookmarked,
+                bookmarks_count: bookmarked
+                  ? p.bookmarks_count - 1
+                  : p.bookmarks_count + 1,
+              }
+            : p,
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div className="searchGridContainer">
-
       {/* ── Search Bar ── */}
       <div className="InputContainer">
         <div className="search-wrapper" ref={wrapperRef}>
@@ -539,21 +735,36 @@ function Search() {
               placeholder="Search people, posts, hashtags..."
               className="main-input"
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setHasSearched(false); }}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setHasSearched(false);
+              }}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               onFocus={() => query.trim() && setShowDropdown(true)}
               autoComplete="off"
             />
             {query && (
-              <button className="clear-btn"
-                onClick={() => { setQuery(""); setShowDropdown(false); setHasSearched(false); }}>
+              <button
+                className="clear-btn"
+                onClick={() => {
+                  setQuery("");
+                  setShowDropdown(false);
+                  setHasSearched(false);
+                }}
+              >
                 <CloseIcon sx={{ fontSize: 18 }} />
               </button>
             )}
-            <button className="search-go" onClick={handleSearch} disabled={searching}>
-              {searching
-                ? <span style={{ fontSize: 12 }}>...</span>
-                : <SearchSharpIcon sx={{ fontSize: 24 }} />}
+            <button
+              className="search-go"
+              onClick={handleSearch}
+              disabled={searching}
+            >
+              {searching ? (
+                <span style={{ fontSize: 12 }}>...</span>
+              ) : (
+                <SearchSharpIcon sx={{ fontSize: 24 }} />
+              )}
             </button>
           </div>
 
@@ -561,7 +772,10 @@ function Search() {
             <SearchDropdown
               results={dropdown}
               query={query}
-              onSelect={(text) => { setQuery(text); handleSearch(); }}
+              onSelect={(text) => {
+                setQuery(text);
+                handleSearch();
+              }}
               onClose={() => setShowDropdown(false)}
             />
           )}
@@ -575,28 +789,33 @@ function Search() {
             <div className="resultSection">
               <h3 className="resultHeading">People</h3>
               {users.map((u) => (
-                <UserCard key={u.id} user={u}
-                  authHeader={{ Authorization: `Bearer ${localStorage.getItem("token")}` }}
-                  onFollowToggle={handleFollowToggle} />
-              ))}
+  <UserCard key={u.id} user={u} onFollowToggle={handleFollowToggle} />
+))}
             </div>
           )}
           {posts.length > 0 && (
             <div className="resultSection">
               <h3 className="resultHeading">Posts</h3>
               {posts.map((post) => (
-                <PostCard key={post.id} post={post}
+                <PostCard
+                  key={post.id}
+                  post={post}
                   onLikeToggle={handleLikeToggle}
                   onRepostToggle={handleRepostToggle}
-                  onBookmarkToggle={handleBookmarkToggle} />
+                  onBookmarkToggle={handleBookmarkToggle}
+                />
               ))}
             </div>
           )}
           {users.length === 0 && posts.length === 0 && (
-            <p style={{
-              color: "var(--text-secondary)", textAlign: "center",
-              padding: "2rem", gridColumn: "span 3"
-            }}>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                textAlign: "center",
+                padding: "2rem",
+                gridColumn: "span 3",
+              }}
+            >
               No results for "<strong>{query}</strong>"
             </p>
           )}
@@ -607,11 +826,10 @@ function Search() {
       {!hasSearched && (
         <>
           <LuckyPick products={products} loading={discoverLoading} />
-          <VideosGrid videos={videos}   loading={discoverLoading} />
-          <Trending   items={trending}  loading={discoverLoading} />
+          <VideosGrid videos={videos} loading={discoverLoading} />
+          <Trending items={trending} loading={discoverLoading} />
         </>
       )}
-
     </div>
   );
 }
