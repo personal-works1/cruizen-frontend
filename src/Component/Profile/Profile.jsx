@@ -825,7 +825,7 @@ if (isBusinessView && vendorProfile) {
                 hidden onChange={handleAvatarUpload} />
             </div>
 
-            <p><strong>@{displayUsername}</strong></p>
+            <p><strong>{displayUsername}</strong></p>
             <p>{displayName}</p>
             <WinnerBadge badges={badges} size="large" />
             {displayBio && <p className="profileBio">{displayBio}</p>}

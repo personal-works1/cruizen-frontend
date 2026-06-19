@@ -186,6 +186,9 @@ export default function PostCard({
   const [viewCounted,        setViewCounted]        = useState(false);
   const [badges,             setBadges]             = useState([]);
   const [localCommentsCount, setLocalCommentsCount] = useState(post.comments_count || 0);
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false);
+  const menuRef = useRef(null)
 
   const cardRef = useRef(null);
 
@@ -209,6 +212,16 @@ export default function PostCard({
   useEffect(() => {
     setLocalCommentsCount(post.comments_count || 0);
   }, [post.comments_count]);
+  
+  useEffect(() => {
+  const handler = (e) => {
+    if (menuRef.current && !menuRef.current.contains(e.target)) {
+      setMenuOpen(false)
+    }
+  }
+  document.addEventListener("mousedown", handler)
+  return () => document.removeEventListener("mousedown", handler)
+}, [])
 
   const recordView = useCallback(async () => {
     if (viewCounted || !user) return;
@@ -238,6 +251,18 @@ export default function PostCard({
     return () => observer.disconnect();
   }, [recordView, viewCounted]);
 
+   const handleDelete = async ()=> {
+       if (!window.confirm("Delete this post?")) return;
+                  try {
+                    const token = await getValidToken();
+                    await axios.delete(`${API_URL}/posts/${post.id}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    onDelete?.(post.id);
+                  } 
+                  catch (err) {
+                    console.error(err); }
+   }
   const goToProfile = () => {
   if (post.author_type === "business") {
     const slug = post.business_name?.toLowerCase().replace(/ /g, "-");
@@ -246,6 +271,7 @@ export default function PostCard({
     navigate(`/profile/${post.username}`);
   }
 };
+
 
 const displayAvatar = post.author_type === "business"
   ? (post.vendor_avatar_url || post.display_avatar || null)
@@ -292,10 +318,60 @@ const displayUsername = post.author_type === "business"
           <WinnerBadge badges={badges} size="small" />
         </div>
         <div>
-          <EqualizerOutlinedIcon style={{ color: "var(--accent)" }} />
-          <p className="pUsername" style={{ color: "var(--text-primary)" }}>
-            {post.views_count || 0}
-          </p>
+         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+  {/* <EqualizerOutlinedIcon style={{ color: "var(--accent)" }} />
+  <p className="pUsername" style={{ color: "var(--text-primary)" }}>
+    {post.views_count || 0}
+  </p> */}
+
+  {/* 3-dot menu — owner only */}
+  {user && user.id === post.user_id && (
+    <div ref={menuRef} style={{ position: "relative" }}>
+      <button
+        onClick={() => setMenuOpen(o => !o)}
+        style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontSize: 18, color: "var(--text-secondary)",
+          padding: "4px 6px", lineHeight: 1, borderRadius: 6,
+        }}
+      >
+        ⋮
+      </button>
+      {menuOpen && (
+        <div style={{
+          position: "absolute", right: 0, top: "110%", zIndex: 9999,
+          background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: 10, boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
+          minWidth: 150, overflow: "hidden",
+        }}>
+          <button
+            onClick={() => { setMenuOpen(false); handleDelete(); }}
+            disabled={deleting}
+            style={{
+              width: "100%", padding: "10px 16px", textAlign: "left",
+              background: "none", border: "none", cursor: "pointer",
+              color: "#e53935", fontSize: 14,
+              display: "flex", alignItems: "center", gap: 8,
+            }}
+          >
+             {deleting ? "Deleting..." : "Delete post"}
+          </button>
+          {/* <button
+            style={{
+              width: "100%", padding: "10px 16px", textAlign: "left",
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--text-primary)", fontSize: 14,
+              display: "flex", alignItems: "center", gap: 8,
+            }}
+          >
+            Edit post
+          </button> */}
+        </div>
+      )}
+    </div>
+  )}
+</div>
+          
         </div>
       </div>
 
@@ -344,6 +420,11 @@ const displayUsername = post.author_type === "business"
               </p>
             </div>
 
+            <EqualizerOutlinedIcon style={{ color: "var(--accent)" }} />
+          <p className="pUsername" style={{ color: "var(--text-primary)" }}>
+            {post.views_count || 0}
+          </p>
+
             <div onClick={() => onBookmarkToggle(post)} style={{ cursor: "pointer" }}>
               {isBookmarked
                 ? <BookmarkIcon style={{ color: "var(--accent)" }} />
@@ -353,16 +434,16 @@ const displayUsername = post.author_type === "business"
 
             {user && user.id === post.user_id && (
               <button
-                onClick={async () => {
-                  if (!window.confirm("Delete this post?")) return;
-                  try {
-                    const token = await getValidToken();
-                    await axios.delete(`${API_URL}/posts/${post.id}`, {
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    onDelete?.(post.id);
-                  } catch (err) { console.error(err); }
-                }}
+                // onClick={async () => {
+                //   if (!window.confirm("Delete this post?")) return;
+                //   try {
+                //     const token = await getValidToken();
+                //     await axios.delete(`${API_URL}/posts/${post.id}`, {
+                //       headers: { Authorization: `Bearer ${token}` },
+                //     });
+                //     onDelete?.(post.id);
+                //   } catch (err) { console.error(err); }
+                // }}
                 style={{
                   background: "none", border: "none",
                   color: "var(--text-secondary)", cursor: "pointer", fontSize: "12px",

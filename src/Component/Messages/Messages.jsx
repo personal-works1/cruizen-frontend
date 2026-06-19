@@ -203,31 +203,47 @@ export default function Messages() {
   }, [activeConvId]);
 
   // ── socket ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!socket || !activeConvId) return;
-    socket.emit("join_conversation", activeConvId);
-   socket.on("new_message", (message) => {
-  setMessages((prev) => {
-    // If this is our own message coming back, replace the optimistic one
-    if (message.tempId) {
-      return prev.map((m) => m.id === message.tempId ? message : m);
-    }
-    // Otherwise it's from the other person — append normally
-    return [...prev, message];
-  });
-});
-    socket.on("user_typing", ({ userId }) => {
-      if (userId !== user.id) setOtherTyping(true);
-    });
-    socket.on("user_stop_typing", ({ userId }) => {
-      if (userId !== user.id) setOtherTyping(false);
-    });
-    return () => {
-      socket.off("new_message");
-      socket.off("user_typing");
-      socket.off("user_stop_typing");
-    };
-  }, [socket, activeConvId]);
+useEffect(() => {
+  if (!socket || !activeConvId) return
+  
+  // join room immediately
+  socket.emit("join_conversation", activeConvId)
+
+  const handleNewMessage = (message) => {
+    setMessages((prev) => {
+      // replace optimistic message for sender
+      if (message.tempId) {
+        const exists = prev.find(m => m.id === message.tempId)
+        if (exists) return prev.map(m => m.id === message.tempId ? message : m)
+      }
+      // avoid duplicates
+      if (prev.find(m => m.id === message.id)) return prev
+      return [...prev, message]
+    })
+
+    // update conversation list last message
+    setConversations(prev => prev.map(c =>
+      c.id === message.conversation_id
+        ? { ...c, last_message: message.content, last_message_at: message.created_at }
+        : c
+    ))
+  }
+
+  socket.on("new_message", handleNewMessage)
+
+  socket.on("user_typing", ({ userId }) => {
+    if (userId !== user.id) setOtherTyping(true)
+  })
+  socket.on("user_stop_typing", ({ userId }) => {
+    if (userId !== user.id) setOtherTyping(false)
+  })
+
+  return () => {
+    socket.off("new_message", handleNewMessage)
+    socket.off("user_typing")
+    socket.off("user_stop_typing")
+  }
+}, [socket, activeConvId])
 
   // ── scroll to bottom ──────────────────────────────────────────────────
   useEffect(() => {
