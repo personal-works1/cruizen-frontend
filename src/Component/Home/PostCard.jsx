@@ -432,26 +432,6 @@ const displayUsername = post.author_type === "business"
               <p style={{ color: "var(--text-primary)" }}>{post.bookmarks_count || 0}</p>
             </div>
 
-            {user && user.id === post.user_id && (
-              <button
-                // onClick={async () => {
-                //   if (!window.confirm("Delete this post?")) return;
-                //   try {
-                //     const token = await getValidToken();
-                //     await axios.delete(`${API_URL}/posts/${post.id}`, {
-                //       headers: { Authorization: `Bearer ${token}` },
-                //     });
-                //     onDelete?.(post.id);
-                //   } catch (err) { console.error(err); }
-                // }}
-                style={{
-                  background: "none", border: "none",
-                  color: "var(--text-secondary)", cursor: "pointer", fontSize: "12px",
-                }}
-              >
-                🗑️
-              </button>
-            )}
           </div>
 
           <div className="O">

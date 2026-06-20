@@ -14,6 +14,8 @@ import { API_URL } from "../Authentication/Authentication";
 import UserAvatar from "../Common/UserAvatar";
 import OrdersTab from "./OrdersTab";
 
+const balanceCache = { value: null };
+
 const CATEGORIES = [
   "All",
   "Lodges",
@@ -207,6 +209,7 @@ function TopUpModal({ onClose, onSuccess, userEmail }) {
       setLoading(false);
     }
   };
+  
 
   return (
     <div
@@ -260,7 +263,7 @@ function TopUpModal({ onClose, onSuccess, userEmail }) {
 }
 
 // ── Withdraw Modal ────────────────────────────────────────────────────────────
-function WithdrawModal({ onClose, balance }) {
+function WithdrawModal({ onClose, balance, onSuccess }) {
   const { token } = useAuth();
   const [form, setForm] = useState({
     amount: "",
@@ -288,24 +291,22 @@ function WithdrawModal({ onClose, balance }) {
       setError("Please fill all bank details");
       return;
     }
-    setLoading(true);
-    setError("");
-    try {
-      await axios.post(
-        `${API_URL}/wallet/withdraw`,
-        {
-          ...form,
-          amount: Number(form.amount),
-        },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      setSuccess("Withdrawal successful! Funds will arrive shortly.");
-    } catch (err) {
-      setError(err.response?.data?.error || "Withdrawal failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+   setLoading(true)
+  setError("")
+  try {
+    await axios.post(
+      `${API_URL}/wallet/withdraw`,
+      { ...form, amount: Number(form.amount) },
+      { headers: { Authorization: `Bearer ${token}` } },
+    )
+    setSuccess("Withdrawal successful! Funds will arrive shortly.")
+    onSuccess(Number(form.amount))   // ← add this line
+  } catch (err) {
+    setError(err.response?.data?.error || "Withdrawal failed")
+  } finally {
+    setLoading(false)
+  }
+}
 
   const banks = [
     { code: "044", name: "Access Bank" },
@@ -1045,8 +1046,8 @@ const Cart = () => {
   const authHeader = { Authorization: `Bearer ${token}` };
   const { mode } = useMode();
 
-  const [balance, setBalance] = useState(0);
-  const [balanceLoading, setBalanceLoading] = useState(true);
+  const [balance, setBalance] = useState(balanceCache.value ?? 0);
+  const [balanceLoading, setBalanceLoading] = useState(balanceCache.value === null);
   const [showTopUp, setShowTopUp] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
@@ -1060,23 +1061,25 @@ const Cart = () => {
   const [searching, setSearching] = useState(false);
   const searchDebounce = useRef(null);
 
-  // fetch wallet balance
+  // fetch wallet balance — cached, no skeleton flash on revisit
   useEffect(() => {
     const fetchBalance = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/wallet/balance`, {
-          headers: authHeader,
-        });
-        setBalance(res.data.balance);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setBalanceLoading(false);
+      if (balanceCache.value !== null) {
+        setBalance(balanceCache.value)
+        setBalanceLoading(false)
       }
-    };
-    fetchBalance();
-  }, []);
-
+      try {
+        const res = await axios.get(`${API_URL}/wallet/balance`, { headers: authHeader })
+        setBalance(res.data.balance)
+        balanceCache.value = res.data.balance
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setBalanceLoading(false)
+      }
+    }
+    fetchBalance()
+  }, [])
   // fetch products grouped by category
   useEffect(() => {
     const fetchProducts = async () => {
@@ -1105,21 +1108,23 @@ const Cart = () => {
   }, []);
 
   // check if returning from Paystack
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const reference = params.get("reference");
-    if (reference) {
-      axios
-        .get(`${API_URL}/wallet/topup/verify?reference=${reference}`, {
-          headers: authHeader,
+ useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const reference = params.get("reference");
+  if (reference) {
+    axios
+      .get(`${API_URL}/wallet/topup/verify?reference=${reference}`, { headers: authHeader })
+      .then((res) => {
+        setBalance((prev) => {
+          const updated = prev + res.data.amount
+          balanceCache.value = updated
+          return updated
         })
-        .then((res) => {
-          setBalance((prev) => prev + res.data.amount);
-          window.history.replaceState({}, "", window.location.pathname);
-        })
-        .catch(console.error);
-    }
-  }, []);
+        window.history.replaceState({}, "", window.location.pathname);
+      })
+      .catch(console.error);
+  }
+}, []);
 
   // product search
   useEffect(() => {
@@ -1443,32 +1448,48 @@ const Cart = () => {
           }}
         />
       )}
-      {showTopUp && (
-        <TopUpModal
-          onClose={() => setShowTopUp(false)}
-          onSuccess={(amount) => {
-            setBalance((prev) => prev + amount);
-            setShowTopUp(false);
-          }}
-          userEmail={user?.email}
-        />
-      )}
       {showWithdraw && (
-        <WithdrawModal
-          onClose={() => setShowWithdraw(false)}
-          balance={balance}
-        />
-      )}
+  <WithdrawModal
+    onClose={() => setShowWithdraw(false)}
+    balance={balance}
+    onSuccess={(amount) => {
+      setBalance(prev => {
+        const updated = prev - amount
+        balanceCache.value = updated
+        return updated
+      })
+    }}
+  />
+)}
       {showTransfer && (
-        <TransferModal
-          onClose={() => setShowTransfer(false)}
-          balance={balance}
-          onSuccess={(amount) => {
-            setBalance((prev) => prev - amount);
-            setShowTransfer(false);
-          }}
-        />
-      )}
+  <TransferModal
+    onClose={() => setShowTransfer(false)}
+    balance={balance}
+    onSuccess={(amount) => {
+      setBalance(prev => {
+        const updated = prev - amount
+        balanceCache.value = updated
+        return updated
+      })
+      setShowTransfer(false)
+    }}
+  />
+)}
+
+{showTopUp && (
+  <TopUpModal
+    onClose={() => setShowTopUp(false)}
+    onSuccess={(amount) => {
+      setBalance(prev => {
+        const updated = prev + amount
+        balanceCache.value = updated
+        return updated
+      })
+      setShowTopUp(false)
+    }}
+    userEmail={user?.email}
+  />
+)}
     </div>
   );
 };

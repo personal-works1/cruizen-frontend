@@ -311,7 +311,15 @@ useEffect(() => {
     fetchTrending()
   }, [authLoading])
 
-
+useEffect(() => {
+  const handleHomeRefresh = () => {
+    feedCache.timestamp = null // invalidate cache so fetchFeed doesn't short-circuit
+    fetchFeed(1, false)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+  window.addEventListener("home-refresh", handleHomeRefresh)
+  return () => window.removeEventListener("home-refresh", handleHomeRefresh)
+}, [fetchFeed])
   // ── SIDEBAR ───────────────────────────────────────────────────────────────
   useEffect(() => {
     if (authLoading) return
@@ -660,9 +668,7 @@ useEffect(() => {
                 }}>
                   {post.post_text}
                 </p>
-                <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                  🔥 {post.score} engagements
-                </p>
+                
               </div>
             ))}
             {!trendingLoading && trending.trending_posts.length === 0 && (

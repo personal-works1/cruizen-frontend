@@ -312,7 +312,7 @@ function Trending({ items, loading }) {
           </p>
           <div className="trendFooter">
             <UserAvatar avatar_url={item.display_avatar} size={20} />
-            <span>{item.display_name} · ❤️ {item.likes_count} · 💬 {item.comments_count}</span>
+            <span>{item.display_name} </span>  
           </div>
         </div>
       ))}

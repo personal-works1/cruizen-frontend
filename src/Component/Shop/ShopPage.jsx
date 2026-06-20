@@ -108,6 +108,53 @@ function ShopEditForm({ shop, onSave, onClose }) {
     </>
   )
 }
+function ShopPageSkeleton() {
+  return (
+    <div className="shopPage">
+      <div className="shopBanner">
+        <div className="skeletonLine shimmer" style={{ width: "100%", height: "100%" }} />
+      </div>
+      <div className="shopIdentity">
+        <div className="skeletonAvatar shimmer" style={{ width: 90, height: 90, borderRadius: "50%" }} />
+        <div className="shopInfo">
+          <div className="skeletonLine shimmer" style={{ width: "140px", height: "20px", marginBottom: "8px" }} />
+          <div className="skeletonLine shimmer" style={{ width: "100px", height: "14px", marginBottom: "8px" }} />
+          <div style={{ display: "flex", gap: "16px", marginTop: "12px" }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} className="skeletonLine shimmer" style={{ width: "50px", height: "30px" }} />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="shopProductsGrid">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="skeletonTile shimmer" style={{ height: "180px", borderRadius: "8px" }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const shopCache = new Map();
+const SHOP_CACHE_TTL = 2 * 60 * 1000;
+
+function getCachedShop(key) {
+  const entry = shopCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > SHOP_CACHE_TTL) {
+    shopCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCachedShop(key, data) {
+  shopCache.set(key, { data, timestamp: Date.now() });
+}
+
+function clearShopCache(key) {
+  shopCache.delete(key);
+}
 
 export default function ShopPage({ vendorId: propVendorId, embedded = false }) {
   const { slug }          = useParams()
@@ -126,28 +173,48 @@ export default function ShopPage({ vendorId: propVendorId, embedded = false }) {
  const shopAvatarInputRef = useRef(null)
 const [avatarUploading, setAvatarUploading] = useState(false)
 const [showEditModal, setShowEditModal] = useState(false)
- useEffect(() => {
-    const fetch = async () => {
-      try {
-        const token = await getValidToken()
-        const url = propVendorId
-          ? `${API_URL}/vendors/shop/id/${propVendorId}`
-          : `${API_URL}/vendors/shop/${slug}`
-        const res = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        setShop(res.data.vendor)
-        setProducts(res.data.products)
-        setStats(res.data.stats)
-        setReviews(res.data.reviews)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+useEffect(() => {
+  const cacheKey = propVendorId || slug;
+
+  const fetch = async () => {
+    // 1. show cached instantly
+    const cached = getCachedShop(cacheKey);
+    if (cached) {
+      setShop(cached.shop);
+      setProducts(cached.products);
+      setStats(cached.stats);
+      setReviews(cached.reviews);
+      setLoading(false);
     }
-    fetch()
-  }, [slug, propVendorId])
+
+    // 2. revalidate in background
+    try {
+      const token = await getValidToken();
+      const url = propVendorId
+        ? `${API_URL}/vendors/shop/id/${propVendorId}`
+        : `${API_URL}/vendors/shop/${slug}`;
+      const res = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShop(res.data.vendor);
+      setProducts(res.data.products);
+      setStats(res.data.stats);
+      setReviews(res.data.reviews);
+
+      setCachedShop(cacheKey, {
+        shop: res.data.vendor,
+        products: res.data.products,
+        stats: res.data.stats,
+        reviews: res.data.reviews,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetch();
+}, [slug, propVendorId]);
   useEffect(() => {
   if (shop) {
     setShopFollowers(shop.followers_count || 0)
@@ -171,6 +238,7 @@ const [showEditModal, setShowEditModal] = useState(false)
       setShopFollowers(prev => prev + 1)
     }
     setFollowing(!following)
+    clearShopCache(propVendorId || slug);
   } catch (err) { console.error(err) }
   finally { setFollowPending(false) }
 }
@@ -221,6 +289,7 @@ const handleShopAvatarUpload = async (e) => {
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
     })
     setShop((prev) => ({ ...prev, avatar_url: res.data.avatar_url }))
+    clearShopCache(propVendorId || slug);
   } catch (err) {
     alert(err.response?.data?.error || "Upload failed")
   } finally {
@@ -237,6 +306,7 @@ const handleShopAvatarDelete = async () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     setShop((prev) => ({ ...prev, avatar_url: null }))
+    clearShopCache(propVendorId || slug);
   } catch (err) {
     alert("Failed to remove photo")
   }
@@ -266,6 +336,7 @@ const handleShopSave = async (updatedData) => {
     }, { headers })
 
     setShop((prev) => ({ ...prev, ...updatedData }))
+    clearShopCache(propVendorId || slug);
     setShowEditModal(false)
   } catch (err) {
     alert(err.response?.data?.error || "Save failed")
@@ -277,11 +348,7 @@ const handleShopSave = async (updatedData) => {
    
     
 
-  if (loading) return (
-    <div style={{ textAlign: "center", padding: "3rem", color: "#61027b" }}>
-      Loading shop...
-    </div>
-  )
+  if (loading && !shop) return <ShopPageSkeleton />
 
   if (!shop) return (
     <div style={{ textAlign: "center", padding: "3rem" }}>

@@ -124,23 +124,30 @@ function NavBar() {
 
         <div className="navBar">
           {/* ── Home ── */}
-          <IconButton sx={{ borderRadius: "8px", padding: "8px 14px" }}>
-            <NavLink className="Links" to={"/"}>
-              {({ isActive }) => (
-                <>
-                  {isActive ? (
-                    <HomeIcon className="Icons" sx={{ fontSize: "30px" }} />
-                  ) : (
-                    <HomeOutlinedIcon
-                      className="Icons"
-                      sx={{ fontSize: "30px" }}
-                    />
-                  )}
-                  <span className="linkName">Home</span>
-                </>
-              )}
-            </NavLink>
-          </IconButton>
+<IconButton sx={{ borderRadius: "8px", padding: "8px 14px" }}>
+  <NavLink
+    className="Links"
+    to={"/"}
+    onClick={(e) => {
+      if (window.location.pathname === "/") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.dispatchEvent(new Event("home-refresh"));
+      }
+    }}
+  >
+    {({ isActive }) => (
+      <>
+        {isActive ? (
+          <HomeIcon className="Icons" sx={{ fontSize: "30px" }} />
+        ) : (
+          <HomeOutlinedIcon className="Icons" sx={{ fontSize: "30px" }} />
+        )}
+        <span className="linkName">Home</span>
+      </>
+    )}
+  </NavLink>
+</IconButton>
 
           {/* ── Search ── */}
           <IconButton sx={{ borderRadius: "8px", padding: "8px 14px" }}>
