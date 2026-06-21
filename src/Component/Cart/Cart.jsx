@@ -936,15 +936,15 @@ function UploadProductModal({ onClose, onUploaded }) {
             placeholder="Describe your product..."
             rows={3}
             style={{
-              padding: "0.7rem 0.9rem",
-              border: "1.5px solid #e2a9f1",
-              borderRadius: "8px",
-              fontSize: "0.95rem",
-              color: "#2d002d",
-              outline: "none",
-              fontFamily: "inherit",
-              resize: "vertical",
-            }}
+  padding: "0.7rem 0.9rem",
+  border: "1.5px solid #e2a9f1",
+  borderRadius: "8px",
+  fontSize: "0.95rem",
+  color: "var(--text-primary)",
+  outline: "none",
+  fontFamily: "inherit",
+  resize: "vertical",
+}}
           />
         </div>
         <div

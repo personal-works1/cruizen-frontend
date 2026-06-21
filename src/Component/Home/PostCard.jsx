@@ -136,14 +136,15 @@ function VideoThumb({ src, postId }) {
       style={{ position: "relative", cursor: "pointer" }}
       onClick={() => navigate(`/reels/${postId}`)}
     >
-      <video
-        ref={videoRef}
-        src={src}
-        loop
-        playsInline
-        muted={muted}
-        style={{ width: "100%", borderRadius: "8px", display: "block", pointerEvents: "none" }}
-      />
+     <video
+  ref={videoRef}
+  src={src}
+  loop
+  playsInline
+  muted={muted}
+  poster={thumbnail || ""} // ← shows first frame instantly
+  style={{ width: "100%", borderRadius: "8px", display: "block", pointerEvents: "none" }}
+/>
       <button
         onClick={handleMuteToggle}
         style={{

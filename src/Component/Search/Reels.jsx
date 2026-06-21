@@ -18,7 +18,7 @@ import "./Reels.css"
 // ── Single Reel ───────────────────────────────────────────────────────────────
 // Bug #1 + #3 fix: isActive drives play/pause; IntersectionObserver in the
 // parent sets activeIndex, so only the visible reel ever plays.
-function ReelItem({ video, index, isActive, muted, onMuteToggle, onLike, onRepost, onBookmark, onFollow }) {
+function ReelItem({ video, index, isActive, isNext, muted, onMuteToggle, onLike, onRepost, onBookmark, onFollow }) {
   const videoRef = useRef(null)
   const navigate = useNavigate()
   const { user: me } = useAuth()
@@ -72,14 +72,15 @@ const goToProfile = () => {
   return (
     <div className="reelItem" data-index={index}>
       <video
-        ref={videoRef}
-        src={video.media_url}
-        loop
-        playsInline
-        muted={muted}
-        onClick={handleVideoTap}
-        className="reelVideo"
-      />
+  ref={videoRef}
+  src={video.media_url}
+  loop
+  playsInline
+  muted={muted}
+  onClick={handleVideoTap}
+  className="reelVideo"
+  preload={isActive || isNext ? "auto" : "none"} // ← add isNext prop
+/>
 
       {paused && (
         <div style={{
@@ -310,15 +311,31 @@ function Reels() {
   }
 
   if (loading) return (
+  <div style={{
+    height: "100vh",
+    background: "#000",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "16px",
+  }}>
     <div style={{
-      height: "100vh", display: "flex",
-      alignItems: "center", justifyContent: "center",
-      background: "#000", color: "#fff"
-    }}>
-      Loading...
-    </div>
-  )
-
+      width: 200,
+      height: 340,
+      borderRadius: 16,
+      background: "linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%)",
+      backgroundSize: "200% 100%",
+      animation: "shimmer 1.5s infinite",
+    }} />
+    <style>{`
+      @keyframes shimmer {
+        0% { background-position: 200% 0 }
+        100% { background-position: -200% 0 }
+      }
+    `}</style>
+  </div>
+)
   return (
     <div className="reelsPage">
       <button className="reelsBackBtn" onClick={() => navigate(-1)}>
@@ -333,18 +350,19 @@ function Reels() {
           can use it as its root. The reelsPage CSS already handles overflow. */}
       <div className="reelsContainer" ref={containerRef}>
         {videos.map((video, index) => (
-          <ReelItem
-            key={video.id}
-            index={index}
-            video={video}
-            isActive={index === activeIndex}
-            muted={muted}
-            onMuteToggle={() => setMuted(m => !m)}
-            onLike={handleLike}
-            onRepost={handleRepost}
-            onBookmark={handleBookmark}
-            onFollow={handleFollow}
-          />
+            <ReelItem
+    key={video.id}
+    index={index}
+    video={video}
+    isActive={index === activeIndex}
+    isNext={index === activeIndex + 1} // ← add this
+    muted={muted}
+    onMuteToggle={() => setMuted(m => !m)}
+    onLike={handleLike}
+    onRepost={handleRepost}
+    onBookmark={handleBookmark}
+    onFollow={handleFollow}
+  />
         ))}
       </div>
     </div>
