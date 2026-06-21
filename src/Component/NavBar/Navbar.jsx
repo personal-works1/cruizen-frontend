@@ -48,7 +48,7 @@ export function HeadingSmallDevice() {
 
 function NavBar() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout,loading } = useAuth();
 
   // ── get mode and active identity from context ─────────────────────────
   const { mode, activeIdentity } = useMode();
@@ -106,7 +106,7 @@ function NavBar() {
   return (
     <>
 
-    {!user && (
+    {!loading && !user && (        
       <div className="guestBanner">
         <span>You're browsing as a guest.</span>
         <button onClick={() => navigate("/usersignIn")}>Sign in</button>
