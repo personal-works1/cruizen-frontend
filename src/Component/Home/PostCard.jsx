@@ -142,7 +142,7 @@ function VideoThumb({ src, postId }) {
   loop
   playsInline
   muted={muted}
-  poster={thumbnail || ""} // ← shows first frame instantly
+
   style={{ width: "100%", borderRadius: "8px", display: "block", pointerEvents: "none" }}
 />
       <button
