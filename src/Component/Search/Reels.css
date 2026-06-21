@@ -60,20 +60,20 @@
     object-fit: contain;
   }
 
-  .reelMobileOverlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 12px 20px;
-    pointer-events: none;
-  }
+ .reelMobileOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 12px calc(20px + env(safe-area-inset-bottom, 0px) + 66px);
+  pointer-events: none;
+}
 
   .reelOverlay {
     pointer-events: all;
     flex: 1;
-    max-width: 75%;
+    max-width: 70%;
   }
 
   .reelUserInfo {
@@ -91,7 +91,6 @@
     pointer-events: all;
   }
 }
-
 /* ══════════════════════════════════════════
    DESKTOP — portrait center, nothing floats
    ══════════════════════════════════════════ */
@@ -167,6 +166,11 @@
   font-size: 12px;
   margin: 2px 0 0;
   text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .reelFollowBtn {
