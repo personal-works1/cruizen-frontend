@@ -1,0 +1,23 @@
+{
+  "name": "Cruizen",
+  "short_name": "Cruizen",
+  "description": "Campus social commerce for Unizik students",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#61027b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/Cruizen.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Cruizen.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
