@@ -323,7 +323,6 @@ function Trending({ items, loading }) {
 // ── UserCard ──────────────────────────────────────────────────────────────────
 function UserCard({ user, onFollowToggle }) {
   const navigate = useNavigate();
-  const { getValidToken } = useAuth();
   const [pending, setPending] = useState(false);
 
   const handleFollow = async (e) => {
@@ -332,12 +331,10 @@ function UserCard({ user, onFollowToggle }) {
     if (pending) return;
     setPending(true);
     try {
-      const token = await getValidToken();
-      const headers = { Authorization: `Bearer ${token}` };
       if (user.is_following) {
-        await axios.delete(`${API_URL}/profile/${user.username}/follow`, { headers });
+        await axios.delete(`${API_URL}/profile/${user.username}/follow`);
       } else {
-        await axios.post(`${API_URL}/profile/${user.username}/follow`, {}, { headers });
+        await axios.post(`${API_URL}/profile/${user.username}/follow`);
       }
       onFollowToggle(user.id);
     } catch (err) { console.error(err); }
@@ -491,7 +488,7 @@ function SearchDropdown({ results, query, onSelect, onClose }) {
 
 // ── Main Search ───────────────────────────────────────────────────────────────
 function Search() {
-  const { getValidToken, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [query, setQuery] = useState("");
@@ -520,19 +517,11 @@ function Search() {
         setProducts(cached.products);
         setDiscoverLoading(false);
       }
-
-      // 2. revalidate in background
-      try {
-        let token = null;
-        try {
-          token = await getValidToken();
-        } catch {}
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
+   try{
         const [discoverRes, productsRes, trendingRes] = await Promise.all([
-          axios.get(`${API_URL}/search/discover`, { headers }),
-          axios.get(`${API_URL}/products`, { headers }),
-          axios.get(`${API_URL}/posts/trending`, { headers }),
+          axios.get(`${API_URL}/search/discover`),
+          axios.get(`${API_URL}/products`),
+          axios.get(`${API_URL}/posts/trending`),
         ]);
 
         const flat = Object.values(productsRes.data.products)
@@ -568,14 +557,9 @@ function Search() {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
-        let token = null;
-        try {
-          token = await getValidToken();
-        } catch {}
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const res = await axios.get(
-          `${API_URL}/search/autocomplete?q=${encodeURIComponent(query)}`,
-          { headers },
+          `${API_URL}/search/autocomplete?q=${encodeURIComponent(query)}`
+
         );
         setDropdown(res.data.results);
         setShowDropdown(true);
@@ -604,10 +588,8 @@ function Search() {
     setShowDropdown(false);
     setSearching(true);
     try {
-      const token = await getValidToken();
       const res = await axios.get(
         `${API_URL}/search?q=${encodeURIComponent(query)}`,
-        { headers: { Authorization: `Bearer ${token}` } },
       );
       setUsers(res.data.users);
       setPosts(res.data.posts);
@@ -641,11 +623,10 @@ function Search() {
     if (!user) return navigate("/auth");
     const liked = post.liked_by_me;
     try {
-      const token = await getValidToken();
-      const headers = { Authorization: `Bearer ${token}` };
+
       liked
-        ? await axios.delete(`${API_URL}/posts/${post.id}/like`, { headers })
-        : await axios.post(`${API_URL}/posts/${post.id}/like`, {}, { headers });
+        ? await axios.delete(`${API_URL}/posts/${post.id}/like`)
+        : await axios.post(`${API_URL}/posts/${post.id}/like`);
       setPosts((prev) =>
         prev.map((p) =>
           p.id === post.id
@@ -665,14 +646,10 @@ function Search() {
   const handleRepostToggle = async (post) => {
     const reposted = post.reposted_by_me;
     try {
-      const token = await getValidToken();
-      const headers = { Authorization: `Bearer ${token}` };
       reposted
-        ? await axios.delete(`${API_URL}/posts/${post.id}/repost`, { headers })
+        ? await axios.delete(`${API_URL}/posts/${post.id}/repost`)
         : await axios.post(
             `${API_URL}/posts/${post.id}/repost`,
-            {},
-            { headers },
           );
       setPosts((prev) =>
         prev.map((p) =>
@@ -695,16 +672,10 @@ function Search() {
   const handleBookmarkToggle = async (post) => {
     const bookmarked = post.bookmarked_by_me;
     try {
-      const token = await getValidToken();
-      const headers = { Authorization: `Bearer ${token}` };
       bookmarked
-        ? await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, {
-            headers,
-          })
+        ? await axios.delete(`${API_URL}/posts/${post.id}/bookmark`)
         : await axios.post(
-            `${API_URL}/posts/${post.id}/bookmark`,
-            {},
-            { headers },
+            `${API_URL}/posts/${post.id}/bookmark`
           );
       setPosts((prev) =>
         prev.map((p) =>

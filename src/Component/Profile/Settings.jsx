@@ -14,10 +14,9 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import './Profile'
 
 export default function Settings() {
-  const { token, user, login, logout } = useAuth()
+  const {user, login, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
-  const authHeader = { Authorization: `Bearer ${token}` }
 
   // Account form
   const [accountForm, setAccountForm] = useState({
@@ -52,10 +51,8 @@ export default function Settings() {
   const handleAccountSave = async () => {
     setAccountSaving(true); setAccountError(''); setAccountSuccess(false)
     try {
-      const res = await axios.put(`${API_URL}/profile/update/me`, accountForm, {
-        headers: authHeader
-      })
-      login(token, { ...user, ...res.data.user })
+      const res = await axios.put(`${API_URL}/profile/update/me`, accountForm)
+      login({ ...user, ...res.data.user })
       setAccountSuccess(true)
       setTimeout(() => setAccountSuccess(false), 3000)
     } catch (err) {
@@ -77,7 +74,7 @@ export default function Settings() {
       await axios.put(`${API_URL}/auth/change-password`, {
         current_password: passForm.current_password,
         new_password:     passForm.new_password,
-      }, { headers: authHeader })
+      })
       setPassSuccess(true)
       setPassForm({ current_password: '', new_password: '', confirm_password: '' })
       setTimeout(() => setPassSuccess(false), 3000)
@@ -90,15 +87,11 @@ export default function Settings() {
 
 // wherever your logout button lives, replace the direct logout() call with this:
 const handleLogout = async () => {
-  const refreshToken = localStorage.getItem("refreshToken")
-  
-  // tell backend to wipe the refresh token from DB so it can't be reused
-  await axios.post(`${API_URL}/auth/logout`, { refreshToken }).catch(() => {})
-  
-  // then clear frontend state
+  await axios.post(`${API_URL}/auth/logout`).catch(() => {})
   logout()
   navigate("/usersignIn")
 }
+
 
   return (
     <div className="settingsPage">

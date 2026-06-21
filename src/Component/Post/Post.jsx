@@ -18,7 +18,6 @@ export default function CreatePostModal({ onClose, onPostCreated }) {
   const fileRef                   = useRef();
 
   // ── who is posting — personal or business identity ───────────────────
-const { getValidToken } = useAuth()
 const { activeIdentity } = useMode()
 
   const handleFile = (e) => {
@@ -42,9 +41,6 @@ const handleSubmit = async () => {
   setError("");
 
   try {
-    // ── get fresh token before every request ─────────────────────────
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
 
     let media_url = null;
 
@@ -70,9 +66,7 @@ const handleSubmit = async () => {
       formData.append("file", file);
 
       try {
-        const uploadRes = await axios.post(`${API_URL}/upload`, formData, {
-          headers: { ...authHeader, "Content-Type": "multipart/form-data" },
-        });
+        const uploadRes = await axios.post(`${API_URL}/upload`, formData);
         media_url = uploadRes.data.url;
       } catch (uploadErr) {
         const msg = uploadErr.response?.data?.error || "File upload failed. Please try again."
@@ -91,7 +85,7 @@ const handleSubmit = async () => {
         author_type: activeIdentity.type,      // ← business or personal
         vendor_id:   activeIdentity.vendor_id, // ← null if personal
       },
-      { headers: { ...authHeader, "Content-Type": "application/json" } }
+    
     );
 
     onPostCreated?.(res.data.post);

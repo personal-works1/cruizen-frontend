@@ -9,7 +9,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 
 export default function PostDetailPage() {
   const { postId }          = useParams()
-  const { getValidToken }   = useAuth()
   const navigate            = useNavigate()
   const [post, setPost]     = useState(null)
   const [loading, setLoading] = useState(true)
@@ -25,10 +24,7 @@ useEffect(() => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/posts/${postId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await axios.get(`${API_URL}/posts/${postId}`)
         setPost(res.data.post)
       } catch (err) {
         console.error(err)
@@ -40,14 +36,12 @@ useEffect(() => {
   }, [postId])
 
   const handleLikeToggle = async (post) => {
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
     const liked = post.liked_by_me
     try {
       if (liked) {
-        await axios.delete(`${API_URL}/posts/${post.id}/like`, { headers: authHeader })
+        await axios.delete(`${API_URL}/posts/${post.id}/like`)
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/like`, {}, { headers: authHeader })
+        await axios.post(`${API_URL}/posts/${post.id}/like`)
       }
       setPost(prev => ({
         ...prev,
@@ -58,14 +52,12 @@ useEffect(() => {
   }
 
   const handleRepostToggle = async (post) => {
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
     const reposted = post.reposted_by_me
     try {
       if (reposted) {
-        await axios.delete(`${API_URL}/posts/${post.id}/repost`, { headers: authHeader })
+        await axios.delete(`${API_URL}/posts/${post.id}/repost`)
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/repost`, {}, { headers: authHeader })
+        await axios.post(`${API_URL}/posts/${post.id}/repost`)
       }
       setPost(prev => ({
         ...prev,
@@ -76,14 +68,12 @@ useEffect(() => {
   }
 
   const handleBookmarkToggle = async (post) => {
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
     const bookmarked = post.bookmarked_by_me
     try {
       if (bookmarked) {
-        await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, { headers: authHeader })
+        await axios.delete(`${API_URL}/posts/${post.id}/bookmark`)
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/bookmark`, {}, { headers: authHeader })
+        await axios.post(`${API_URL}/posts/${post.id}/bookmark`)
       }
       setPost(prev => ({
         ...prev,

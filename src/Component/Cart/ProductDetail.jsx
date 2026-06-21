@@ -92,8 +92,6 @@ function BuyModal({ product, quantity, onClose, onConfirm, balance, loading }) {
 export default function ProductDetail() {
   const { id }     = useParams()
   const navigate   = useNavigate()
-  // const { token, user } = useAuth()
-  // const authHeader = { Authorization: `Bearer ${token}` }
 
   const [product,  setProduct]  = useState(null)
   const [reviews,  setReviews]  = useState([])
@@ -104,18 +102,15 @@ export default function ProductDetail() {
   const [buying,   setBuying]   = useState(false)
   const [error,    setError]    = useState("")
 
- const { user, getValidToken } = useAuth()
+ const { user } = useAuth()
 
 useEffect(() => {
   const fetchAll = async () => {
     try {
-      const freshToken = await getValidToken()
-      if (!freshToken) return
-      const headers = { Authorization: `Bearer ${freshToken}` }
 
       const [productRes, balanceRes] = await Promise.all([
-        axios.get(`${API_URL}/products/${id}`, { headers }),
-        axios.get(`${API_URL}/wallet/balance`,  { headers }),
+        axios.get(`${API_URL}/products/${id}`),
+        axios.get(`${API_URL}/wallet/balance`),
       ])
       setProduct(productRes.data.product)
       setBalance(balanceRes.data.balance)
@@ -132,11 +127,11 @@ const handleBuy = async () => {
   setBuying(true)
   setError("")
   try {
-    const freshToken = await getValidToken()
+
     const res = await axios.post(
       `${API_URL}/orders/create`,
       { product_id: id, quantity },
-      { headers: { Authorization: `Bearer ${freshToken}` } }
+     
     )
     navigate(`/order/${res.data.order.id}`)
   } catch (err) {

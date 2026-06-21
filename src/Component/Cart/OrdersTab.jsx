@@ -53,11 +53,10 @@ function OrderCard({ order, type }) {
 }
 
 export default function OrdersTab() {
-  const { token, user } = useAuth()
+  const {  user } = useAuth()
   const [view,    setView]    = useState('purchases')
   const [orders,  setOrders]  = useState([])
   const [loading, setLoading] = useState(true)
-  const authHeader = { Authorization: `Bearer ${token}` }
 
   const isVendor = user?.role === 'vendor' || user?.role === 'both'
 
@@ -68,7 +67,7 @@ export default function OrdersTab() {
         const endpoint = view === 'purchases'
           ? `${API_URL}/orders/my/purchases`
           : `${API_URL}/orders/my/sales`
-        const res = await axios.get(endpoint, { headers: authHeader })
+        const res = await axios.get(endpoint)
         setOrders(res.data)
       } catch (err) {
         console.error(err)

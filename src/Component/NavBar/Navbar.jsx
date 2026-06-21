@@ -48,7 +48,7 @@ export function HeadingSmallDevice() {
 
 function NavBar() {
   const navigate = useNavigate();
-  const { user, logout, token, getValidToken } = useAuth();
+  const { user, logout } = useAuth();
 
   // ── get mode and active identity from context ─────────────────────────
   const { mode, activeIdentity } = useMode();
@@ -68,9 +68,7 @@ function NavBar() {
     if (!user) return;
     const fetchCount = async () => {
       try {
-        const freshToken = await getValidToken(); // ← fresh token
         const res = await axios.get(`${API_URL}/notifications/unread-count`, {
-          headers: { Authorization: `Bearer ${freshToken}` },
         });
         setUnreadCount(res.data.count);
       } catch (err) {
@@ -87,9 +85,7 @@ function NavBar() {
     if (!user) return;
     const fetchMessageCount = async () => {
       try {
-        const freshToken = await getValidToken(); // ← fresh token
         const res = await axios.get(`${API_URL}/messages/unread-count`, {
-          headers: { Authorization: `Bearer ${freshToken}` },
         });
         setUnreadMessages(res.data.count);
       } catch (err) {

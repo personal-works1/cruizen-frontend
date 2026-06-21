@@ -184,7 +184,6 @@ export function OrdersTabSkeleton() {
 
 // ── Top Up Modal ──────────────────────────────────────────────────────────────
 function TopUpModal({ onClose, onSuccess, userEmail }) {
-  const { token } = useAuth();
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -200,7 +199,6 @@ function TopUpModal({ onClose, onSuccess, userEmail }) {
       const res = await axios.post(
         `${API_URL}/wallet/topup/initialize`,
         { amount: Number(amount), email: userEmail },
-        { headers: { Authorization: `Bearer ${token}` } },
       );
       window.location.href = res.data.authorization_url;
     } catch (err) {
@@ -264,7 +262,6 @@ function TopUpModal({ onClose, onSuccess, userEmail }) {
 
 // ── Withdraw Modal ────────────────────────────────────────────────────────────
 function WithdrawModal({ onClose, balance, onSuccess }) {
-  const { token } = useAuth();
   const [form, setForm] = useState({
     amount: "",
     bank_code: "",
@@ -297,7 +294,6 @@ function WithdrawModal({ onClose, balance, onSuccess }) {
     await axios.post(
       `${API_URL}/wallet/withdraw`,
       { ...form, amount: Number(form.amount) },
-      { headers: { Authorization: `Bearer ${token}` } },
     )
     setSuccess("Withdrawal successful! Funds will arrive shortly.")
     onSuccess(Number(form.amount))   // ← add this line
@@ -437,7 +433,7 @@ function WithdrawModal({ onClose, balance, onSuccess }) {
 
 // ── Transfer Modal ────────────────────────────────────────────────────────────
 function TransferModal({ onClose, balance, onSuccess }) {
-  const { getValidToken } = useAuth();
+
   const [form, setForm] = useState({
     recipient_username: "",
     amount: "",
@@ -466,7 +462,7 @@ function TransferModal({ onClose, balance, onSuccess }) {
     setLoading(true);
     setError("");
     try {
-      const token = await getValidToken();
+    
       await axios.post(
         `${API_URL}/wallet/transfer`,
         {
@@ -474,7 +470,6 @@ function TransferModal({ onClose, balance, onSuccess }) {
           amount: Number(form.amount),
           note: form.note,
         },
-        { headers: { Authorization: `Bearer ${token}` } },
       );
       setSuccess(
         `₦${Number(form.amount).toLocaleString()} sent to @${form.recipient_username} successfully!`,
@@ -585,7 +580,7 @@ function TransferModal({ onClose, balance, onSuccess }) {
 // ── Product Card ──────────────────────────────────────────────────────────────
 function ProductCard({ product, onDeleted }) {
   const navigate = useNavigate();
-  const { user, token } = useAuth();
+  const { user} = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const menuRef = useRef();
@@ -607,9 +602,7 @@ function ProductCard({ product, onDeleted }) {
     if (!window.confirm("Delete this product?")) return;
     setDeleting(true);
     try {
-      await axios.delete(`${API_URL}/products/${product.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(`${API_URL}/products/${product.id}`);
       onDeleted(product);
       setMenuOpen(false);
     } catch (err) {
@@ -805,7 +798,6 @@ const PRODUCT_CATEGORIES = [
 ];
 
 function UploadProductModal({ onClose, onUploaded }) {
-  const { token } = useAuth();
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -857,7 +849,6 @@ function UploadProductModal({ onClose, onUploaded }) {
       if (image) formData.append("image", image);
       const res = await axios.post(`${API_URL}/products/create`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
@@ -1041,9 +1032,8 @@ function UploadProductModal({ onClose, onUploaded }) {
 
 // ── Main Cart ─────────────────────────────────────────────────────────────────
 const Cart = () => {
-  const { token, user, getValidToken } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const authHeader = { Authorization: `Bearer ${token}` };
   const { mode } = useMode();
 
   const [balance, setBalance] = useState(balanceCache.value ?? 0);
@@ -1069,7 +1059,7 @@ const Cart = () => {
         setBalanceLoading(false)
       }
       try {
-        const res = await axios.get(`${API_URL}/wallet/balance`, { headers: authHeader })
+        const res = await axios.get(`${API_URL}/wallet/balance`, )
         setBalance(res.data.balance)
         balanceCache.value = res.data.balance
       } catch (err) {
@@ -1090,9 +1080,7 @@ const Cart = () => {
           setProductsLoading(false);
           return;
         }
-        const res = await axios.get(`${API_URL}/products`, {
-          headers: authHeader,
-        });
+        const res = await axios.get(`${API_URL}/products`);
         setProducts(res.data.products);
         sessionStorage.setItem(
           "products_cache",
@@ -1113,7 +1101,7 @@ const Cart = () => {
   const reference = params.get("reference");
   if (reference) {
     axios
-      .get(`${API_URL}/wallet/topup/verify?reference=${reference}`, { headers: authHeader })
+      .get(`${API_URL}/wallet/topup/verify?reference=${reference}`,)
       .then((res) => {
         setBalance((prev) => {
           const updated = prev + res.data.amount
@@ -1136,10 +1124,9 @@ const Cart = () => {
     searchDebounce.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const freshToken = await getValidToken();
         const res = await axios.get(
           `${API_URL}/products/search?q=${searchQuery}`,
-          { headers: { Authorization: `Bearer ${freshToken}` } },
+         
         );
         setSearchResults(res.data);
       } catch (err) {

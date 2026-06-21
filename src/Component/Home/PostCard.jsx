@@ -172,7 +172,7 @@ export default function PostCard({
   onDelete,
   autoOpenComments = false,
 }) {
-  const { user, getValidToken } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   if (!post || !post.id) return null;
@@ -199,10 +199,7 @@ export default function PostCard({
   useEffect(() => {
     const fetchBadges = async () => {
       try {
-        const token = await getValidToken();
-        const res = await axios.get(`${API_URL}/leaderboard/badges/${post.user_id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(`${API_URL}/leaderboard/badges/${post.user_id}`);
         setBadges(res.data.badges);
       } catch {}
     };
@@ -226,11 +223,9 @@ export default function PostCard({
   const recordView = useCallback(async () => {
     if (viewCounted || !user) return;
     try {
-      const token = await getValidToken();
       await axios.post(
         `${API_URL}/posts/${post.id}/view`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
       );
       setViewCounted(true);
     } catch (err) {
@@ -254,10 +249,7 @@ export default function PostCard({
    const handleDelete = async ()=> {
        if (!window.confirm("Delete this post?")) return;
                   try {
-                    const token = await getValidToken();
-                    await axios.delete(`${API_URL}/posts/${post.id}`, {
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
+                    await axios.delete(`${API_URL}/posts/${post.id}`);
                     onDelete?.(post.id);
                   } 
                   catch (err) {

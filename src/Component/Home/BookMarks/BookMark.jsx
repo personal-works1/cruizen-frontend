@@ -7,13 +7,10 @@ export default function Bookmarks() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const token = localStorage.getItem("token")
-  const authHeader = { Authorization: `Bearer ${token}` }
-
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await axios.get(`${API_URL}/posts/bookmarks`, { headers: authHeader })
+        const res = await axios.get(`${API_URL}/posts/bookmarks`)
         setPosts(res.data.posts)
       } catch (err) {
         console.error(err)
@@ -25,7 +22,7 @@ export default function Bookmarks() {
   }, [])
 
   const handleBookmarkToggle = async (post) => {
-    await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, { headers: authHeader })
+    await axios.delete(`${API_URL}/posts/${post.id}/bookmark`)
     setPosts((prev) => prev.filter((p) => p.id !== post.id)) // remove from page instantly
   }
 

@@ -13,7 +13,6 @@ export default function CommentModal({ post, onClose, onCommentAdded }) {
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading]         = useState(true);
   const [posting, setPosting]         = useState(false);
-  const { getValidToken }             = useAuth() // ← use getValidToken not raw token
   const { activeIdentity }            = useMode()
 
     const profileUsername = post.real_username || post.username
@@ -21,11 +20,9 @@ export default function CommentModal({ post, onClose, onCommentAdded }) {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        // ── get fresh token before every request ─────────────────────
-        const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/posts/${post.id}/comments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    
+        const res = await axios.get(`${API_URL}/posts/${post.id}/comments`
+        );
         setComments(res.data.comments);
       } catch (err) {
         console.error("Failed to load comments", err);
@@ -40,8 +37,6 @@ export default function CommentModal({ post, onClose, onCommentAdded }) {
     if (!commentText.trim()) return;
     setPosting(true);
     try {
-      // ── get fresh token before posting ───────────────────────────
-      const token = await getValidToken()
       const res = await axios.post(
         `${API_URL}/posts/${post.id}/comment`,
         {
@@ -49,7 +44,7 @@ export default function CommentModal({ post, onClose, onCommentAdded }) {
           author_type: activeIdentity.type,
           vendor_id:   activeIdentity.vendor_id,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+       
       );
 
       const newComment = {

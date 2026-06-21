@@ -37,10 +37,7 @@ function TransactionLabel({ type }) {
 }
 
 export default function WalletHistory() {
-  const { token } = useAuth()
   const navigate  = useNavigate()
-  const authHeader = { Authorization: `Bearer ${token}` }
-
   const [balance,      setBalance]      = useState(0)
   const [transactions, setTransactions] = useState([])
   const [loading,      setLoading]      = useState(true)
@@ -50,8 +47,8 @@ export default function WalletHistory() {
     const fetchData = async () => {
       try {
         const [balRes, txRes] = await Promise.all([
-          axios.get(`${API_URL}/wallet/balance`,      { headers: authHeader }),
-          axios.get(`${API_URL}/wallet/transactions`, { headers: authHeader }),
+          axios.get(`${API_URL}/wallet/balance`),
+          axios.get(`${API_URL}/wallet/transactions`),
         ])
         setBalance(balRes.data.balance)
         setTransactions(txRes.data.transactions)

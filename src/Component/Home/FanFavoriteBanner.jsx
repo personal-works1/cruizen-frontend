@@ -7,7 +7,6 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents"
 import CloseIcon from "@mui/icons-material/Close"
 
 export default function FanFavoriteBanner() {
-  const { getValidToken } = useAuth()
 
   const [nominees,  setNominees]  = useState([])
   const [period,    setPeriod]    = useState(null)
@@ -19,10 +18,7 @@ export default function FanFavoriteBanner() {
   useEffect(() => {
     const fetchNominees = async () => {
       try {
-        const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/leaderboard/nominees`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await axios.get(`${API_URL}/leaderboard/nominees`)
 
         const { nominees, period, hasVoted } = res.data
 
@@ -52,11 +48,9 @@ export default function FanFavoriteBanner() {
   const handleVote = async (nomineeId) => {
     setVoting(nomineeId)
     try {
-      const token = await getValidToken()
       await axios.post(
         `${API_URL}/leaderboard/vote`,
         { nominee_id: nomineeId },
-        { headers: { Authorization: `Bearer ${token}` } }
       )
       // ── voted successfully → hide banner ─────────────────────────────
       setVisible(false)

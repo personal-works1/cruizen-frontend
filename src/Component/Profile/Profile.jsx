@@ -159,7 +159,7 @@ function SocialLinks({ data }) {
 
 // ── Edit Profile Modal ────────────────────────────────────────────────────────
 function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
-  const { token } = useAuth();
+
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -205,14 +205,13 @@ function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
     setSaving(true);
     setError("");
     try {
-      const headers = { Authorization: `Bearer ${token}` };
 
       if (isBusinessView) {
         const res = await axios.put(`${API_URL}/vendors/update`, {
           business_name:        form.name,
           business_description: form.bio,
-        }, { headers });
-        await axios.put(`${API_URL}/vendors/social-links`, socialPayload, { headers });
+        });
+        await axios.put(`${API_URL}/vendors/social-links`, socialPayload);
         onSave({ ...res.data.vendor, ...socialPayload });
       } else {
         const res = await axios.put(`${API_URL}/profile/update/me`, {
@@ -220,8 +219,8 @@ function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
           bio:      form.bio,
           location: form.location,
           website:  form.website,
-        }, { headers });
-        await axios.put(`${API_URL}/profile/social-links`, socialPayload, { headers });
+        });
+        await axios.put(`${API_URL}/profile/social-links`, socialPayload);
         onSave({ ...res.data.user, ...socialPayload });
       }
 
@@ -333,16 +332,13 @@ function EditProfileModal({ profileUser, isBusinessView, onClose, onSave }) {
 
 // ── Cart Grid ─────────────────────────────────────────────────────────────────
 function CartGrid({ isOwnProfile, isVendor }) {
-  const { token } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_URL}/products/vendor/mine`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(`${API_URL}/products/vendor/mine`);
         setProducts(res.data.products);
       } catch (err) {
         console.error(err);
@@ -390,7 +386,7 @@ function CartGrid({ isOwnProfile, isVendor }) {
 function Profile() {
   const { username } = useParams();
   const navigate = useNavigate();
- const { token, user: me, login, getValidToken, loading: authLoading, refreshUser } = useAuth();
+ const {  user: me, login,  loading: authLoading, refreshUser } = useAuth();
   const { mode, activeIdentity, vendorProfile, setVendorProfile, switchMode } = useMode();
 
   const [profileData, setProfileData]         = useState(null);
@@ -412,7 +408,6 @@ function Profile() {
     business_category: "", business_description: "",
   });
 
-  const authHeader = { Authorization: `Bearer ${token}` };
   const targetUsername = username || me?.username;
   const isOwnProfile = !username || username === me?.username;
   const isBusinessView = isOwnProfile && mode === "business";
@@ -436,22 +431,15 @@ function Profile() {
         setLoading(false);
         return;
       }
-
       setLoading(true);
       try {
-        const freshToken = await getValidToken();
-        if (!freshToken) return;
-        const headers = { Authorization: `Bearer ${freshToken}` };
-
-        const res = await axios.get(`${API_URL}/profile/${targetUsername}`, { headers });
+        const res = await axios.get(`${API_URL}/profile/${targetUsername}`);
         const { user, posts: fetchedPosts } = res.data;
 
         let fetchedBadges = [];
         if (user?.id) {
           try {
-            const badgeRes = await axios.get(
-              `${API_URL}/leaderboard/badges/${user.id}`, { headers }
-            );
+             const badgeRes = await axios.get(`${API_URL}/leaderboard/badges/${user.id}`)
             fetchedBadges = badgeRes.data.badges;
           } catch {}
         }
@@ -482,14 +470,12 @@ function Profile() {
     const fetchTab = async () => {
       setTabLoading(true);
       try {
-        const tok = await getValidToken();
-        const headers = { Authorization: `Bearer ${tok}` };
         if (activeTab === "reposts") {
-          const res = await axios.get(`${API_URL}/profile/${profileData.username}/reposts`, { headers });
+          const res = await axios.get(`${API_URL}/profile/${profileData.username}/reposts`);
           setReposts(res.data.posts);
         }
         if (activeTab === "liked") {
-          const res = await axios.get(`${API_URL}/profile/${profileData.username}/liked`, { headers });
+          const res = await axios.get(`${API_URL}/profile/${profileData.username}/liked`);
           setLiked(res.data.posts);
         }
       } catch (err) {
@@ -518,12 +504,10 @@ function Profile() {
     clearProfileCache(targetUsername);
 
     try {
-      const freshToken = await getValidToken();
-      const headers = { Authorization: `Bearer ${freshToken}` };
       if (isFollowing) {
-        await axios.delete(`${API_URL}/profile/${profileData.username}/follow`, { headers });
+        await axios.delete(`${API_URL}/profile/${profileData.username}/follow`);
       } else {
-        await axios.post(`${API_URL}/profile/${profileData.username}/follow`, {}, { headers });
+        await axios.post(`${API_URL}/profile/${profileData.username}/follow`);
       }
     } catch (err) {
       // Rollback on failure
@@ -545,7 +529,8 @@ function Profile() {
       setVendorProfile((prev) => ({ ...prev, ...updatedData }));
     } else {
       setProfileData((prev) => ({ ...prev, ...updatedData }));
-      if (me) login(token, localStorage.getItem("refreshToken"), { ...me, ...updatedData });
+      if (me) login({ ...me, ...updatedData });
+
     }
   };
 
@@ -559,17 +544,16 @@ function Profile() {
       const formData = new FormData();
       formData.append("avatar", file);
       if (isBusinessView) {
-        const tok = await getValidToken();
         const res = await axios.post(`${API_URL}/vendors/avatar`, formData, {
-          headers: { Authorization: `Bearer ${tok}`, "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" },
         });
         setVendorProfile((prev) => ({ ...prev, avatar_url: res.data.avatar_url }));
       } else {
         const res = await axios.post(`${API_URL}/profile/avatar`, formData, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+          headers: {"Content-Type": "multipart/form-data" },
         });
         setProfileData((prev) => ({ ...prev, avatar_url: res.data.avatar_url }));
-        login(token, localStorage.getItem("refreshToken"), { ...me, avatar_url: res.data.avatar_url });
+        login({ ...me, avatar_url: res.data.avatar_url });
       }
     } catch (err) {
       console.error("Avatar upload failed", err);
@@ -586,15 +570,12 @@ function Profile() {
     clearProfileCache(targetUsername);
     try {
       if (isBusinessView) {
-        const tok = await getValidToken();
-        await axios.delete(`${API_URL}/vendors/avatar`, {
-          headers: { Authorization: `Bearer ${tok}` },
-        });
+        await axios.delete(`${API_URL}/vendors/avatar`);
         setVendorProfile((prev) => ({ ...prev, avatar_url: null }));
       } else {
-        await axios.delete(`${API_URL}/profile/avatar`, { headers: authHeader });
+        await axios.delete(`${API_URL}/profile/avatar`);
         setProfileData((prev) => ({ ...prev, avatar_url: null }));
-       login(token, localStorage.getItem("refreshToken"), { ...me, avatar_url: null });
+       login({ ...me, avatar_url: null });
       }
     } catch (err) {
       console.error(err);
@@ -606,9 +587,9 @@ function Profile() {
     const isLiked = post.liked_by_me;
     try {
       if (isLiked) {
-        await axios.delete(`${API_URL}/posts/${post.id}/like`, { headers: authHeader });
+        await axios.delete(`${API_URL}/posts/${post.id}/like`);
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/like`, {}, { headers: authHeader });
+        await axios.post(`${API_URL}/posts/${post.id}/like`);
       }
       const update = (p) => p.id === post.id
         ? { ...p, liked_by_me: !isLiked, likes_count: isLiked ? p.likes_count - 1 : p.likes_count + 1 }
@@ -622,9 +603,9 @@ function Profile() {
     const isReposted = post.reposted_by_me;
     try {
       if (isReposted) {
-        await axios.delete(`${API_URL}/posts/${post.id}/repost`, { headers: authHeader });
+        await axios.delete(`${API_URL}/posts/${post.id}/repost`);
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/repost`, {}, { headers: authHeader });
+        await axios.post(`${API_URL}/posts/${post.id}/repost`);
       }
       const update = (p) => p.id === post.id
         ? { ...p, reposted_by_me: !isReposted, reposts_count: isReposted ? p.reposts_count - 1 : p.reposts_count + 1 }
@@ -638,9 +619,9 @@ function Profile() {
     const isBookmarked = post.bookmarked_by_me;
     try {
       if (isBookmarked) {
-        await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, { headers: authHeader });
+        await axios.delete(`${API_URL}/posts/${post.id}/bookmark`);
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/bookmark`, {}, { headers: authHeader });
+        await axios.post(`${API_URL}/posts/${post.id}/bookmark`);
       }
       const update = (p) => p.id === post.id
         ? { ...p, bookmarked_by_me: !isBookmarked, bookmarks_count: isBookmarked ? p.bookmarks_count - 1 : p.bookmarks_count + 1 }
@@ -661,8 +642,7 @@ const handleVendorSubmit = async (e) => {
     // Create the vendor profile
     const response = await axios.post(
       `${API_URL}/vendors/create`,
-      vendorForm,
-      { headers: authHeader }
+      vendorForm
     );
 
     // Fix: refreshUser re-fetches user from DB (role is now 'both')
@@ -688,10 +668,10 @@ const handleVendorSubmit = async (e) => {
   // ── Message ───────────────────────────────────────────────────────────
  // In Profile.jsx, change handleMessage:
 const handleMessage = async () => {
-  if (!token) { navigate("/usersignIn"); return }
+  if (!me) { navigate("/usersignIn"); return }
   try {
     const res = await axios.post(`${API_URL}/messages/conversation`,
-      { user2: profileData.id }, { headers: authHeader });
+      { user2: profileData.id });
     navigate("/messages", { state: { 
       openConversation: res.data.conversation,
       tab: "personal"  // ← explicitly set personal tab
@@ -914,10 +894,8 @@ if (isBusinessView && vendorProfile) {
                 onChange={async (e) => {
                   const val = e.target.checked;
                   try {
-                    const tok = await getValidToken();
                     await axios.put(`${API_URL}/vendors/settings/show-on-profile`,
-                      { show_on_profile: val },
-                      { headers: { Authorization: `Bearer ${tok}` } });
+                      { show_on_profile: val },)
                     setVendorProfile((prev) => ({ ...prev, show_on_profile: val }));
                   } catch (err) { console.error(err); }
                 }}

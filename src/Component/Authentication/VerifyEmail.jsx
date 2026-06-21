@@ -25,7 +25,7 @@ export default function VerifyEmail() {
     try {
       const res = await axios.post(`${API_URL}/auth/verify-email`, { email, code })
       // ← auto-login and go home
-      login(res.data.token, res.data.refreshToken, res.data.user)
+      login( res.data.user)
       navigate("/")
     } catch (err) {
       setError(err.response?.data?.error || "Verification failed")

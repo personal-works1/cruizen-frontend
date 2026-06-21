@@ -92,10 +92,7 @@ function NotificationMessage({ type, senderName, postText }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Notifications() {
-  const { token } = useAuth();
   const navigate  = useNavigate();
-  const authHeader = { Authorization: `Bearer ${token}` };
-
   const [notifications, setNotifications] = useState([]);
   const [loading,       setLoading]       = useState(true);
 
@@ -111,13 +108,13 @@ export default function Notifications() {
 
       // 2. always revalidate in background (notifications change fast)
       try {
-        const res = await axios.get(`${API_URL}/notifications`, { headers: authHeader });
+        const res = await axios.get(`${API_URL}/notifications`);
         const fresh = res.data.notifications;
         setNotifications(fresh);
         setCache(fresh);
 
         // mark all read
-        await axios.put(`${API_URL}/notifications/read-all`, {}, { headers: authHeader });
+        await axios.put(`${API_URL}/notifications/read-all`);
         // update cache to reflect read state
         const read = fresh.map(n => ({ ...n, is_read: true }));
         setNotifications(read);
@@ -138,9 +135,8 @@ export default function Notifications() {
     );
     bustCache();
 
-    axios.put(`${API_URL}/notifications/${notif.id}/read`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).catch(() => {});
+    axios.put(`${API_URL}/notifications/${notif.id}/read`
+    ).catch(() => {});
 
     if (notif.type === "follow") {
       navigate(`/profile/${notif.sender_username}`);
@@ -157,7 +153,7 @@ export default function Notifications() {
   };
 
   const handleMarkAll = async () => {
-    await axios.put(`${API_URL}/notifications/read-all`, {}, { headers: authHeader });
+    await axios.put(`${API_URL}/notifications/read-all`);
     const updated = notifications.map(n => ({ ...n, is_read: true }));
     setNotifications(updated);
     setCache(updated);

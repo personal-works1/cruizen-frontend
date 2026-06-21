@@ -87,7 +87,7 @@ function ChatSkeleton() {
 
 // ── Main Messages ─────────────────────────────────────────────────────────────
 export default function Messages() {
-  const { getValidToken, user } = useAuth();
+  const { user } = useAuth();
   const { socket, onlineUsers } = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
@@ -145,10 +145,8 @@ export default function Messages() {
     const fetchConversations = async () => {
       setLoading(true);
       try {
-        const token = await getValidToken();
         const res = await axios.get(
           `${API_URL}/messages/conversations?type=${activeTab}`,
-          { headers: { Authorization: `Bearer ${token}` } }
         );
         if (cancelled) return;
 
@@ -187,10 +185,9 @@ export default function Messages() {
     const fetchMessages = async () => {
       setMsgLoading(true);
       try {
-        const token = await getValidToken();
         const res = await axios.get(
           `${API_URL}/messages/conversations/${activeConvId}/messages`,
-          { headers: { Authorization: `Bearer ${token}` } }
+        
         );
         setMessages(res.data.messages);
       } catch (err) {
@@ -282,10 +279,8 @@ useEffect(() => {
     const timeout = setTimeout(async () => {
       setUserSearching(true);
       try {
-        const token = await getValidToken();
         const res = await axios.get(
           `${API_URL}/search?q=${userSearch}&type=users`,
-          { headers: { Authorization: `Bearer ${token}` } }
         );
         setUserResults(res.data.users || []);
       } catch (err) {
@@ -309,11 +304,9 @@ useEffect(() => {
 
   const handleStartConversation = async (userId) => {
     try {
-      const token = await getValidToken();
       const res = await axios.post(
         `${API_URL}/messages/conversation`,
         { user2: userId },
-        { headers: { Authorization: `Bearer ${token}` } }
       );
       const conv = res.data.conversation;
       setConversations((prev) => {

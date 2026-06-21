@@ -159,7 +159,7 @@ function clearShopCache(key) {
 export default function ShopPage({ vendorId: propVendorId, embedded = false }) {
   const { slug }          = useParams()
   const navigate          = useNavigate()
-  const { user, getValidToken } = useAuth()
+  const { user} = useAuth()
 
   const [shop,     setShop]     = useState(null)
   const [products, setProducts] = useState([])
@@ -189,13 +189,10 @@ useEffect(() => {
 
     // 2. revalidate in background
     try {
-      const token = await getValidToken();
       const url = propVendorId
         ? `${API_URL}/vendors/shop/id/${propVendorId}`
         : `${API_URL}/vendors/shop/${slug}`;
-      const res = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.get(url);
       setShop(res.data.vendor);
       setProducts(res.data.products);
       setStats(res.data.stats);
@@ -228,13 +225,11 @@ useEffect(() => {
   if (followPending || !user) return
   setFollowPending(true)
   try {
-    const token = await getValidToken()
-    const headers = { Authorization: `Bearer ${token}` }
     if (following) {
-      await axios.delete(`${API_URL}/vendors/${shop.id}/follow`, { headers })
+      await axios.delete(`${API_URL}/vendors/${shop.id}/follow`)
       setShopFollowers(prev => prev - 1)
     } else {
-      await axios.post(`${API_URL}/vendors/${shop.id}/follow`, {}, { headers })
+      await axios.post(`${API_URL}/vendors/${shop.id}/follow`)
       setShopFollowers(prev => prev + 1)
     }
     setFollowing(!following)
@@ -247,7 +242,6 @@ useEffect(() => {
 const handleMessage = async () => {
   if (!user) { navigate("/usersignIn"); return }
   try {
-    const token = await getValidToken()
     
     console.log("Creating conversation with:", {
       user2: shop.user_id,
@@ -262,7 +256,6 @@ const handleMessage = async () => {
         type: "business",
         vendor_id: shop.id
       },
-      { headers: { Authorization: `Bearer ${token}` } }
     )
     
     console.log("Conversation returned:", res.data.conversation)
@@ -282,11 +275,10 @@ const handleShopAvatarUpload = async (e) => {
   if (!file) return
   setAvatarUploading(true)
   try {
-    const token = await getValidToken()
     const formData = new FormData()
     formData.append("avatar", file)
     const res = await axios.post(`${API_URL}/vendors/avatar`, formData, {
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+      headers: {  "Content-Type": "multipart/form-data" },
     })
     setShop((prev) => ({ ...prev, avatar_url: res.data.avatar_url }))
     clearShopCache(propVendorId || slug);
@@ -301,10 +293,7 @@ const handleShopAvatarUpload = async (e) => {
 const handleShopAvatarDelete = async () => {
   if (!window.confirm("Remove shop profile picture?")) return
   try {
-    const token = await getValidToken()
-    await axios.delete(`${API_URL}/vendors/avatar`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    await axios.delete(`${API_URL}/vendors/avatar`)
     setShop((prev) => ({ ...prev, avatar_url: null }))
     clearShopCache(propVendorId || slug);
   } catch (err) {
@@ -314,13 +303,11 @@ const handleShopAvatarDelete = async () => {
 
 const handleShopSave = async (updatedData) => {
   try {
-    const token = await getValidToken()
-    const headers = { Authorization: `Bearer ${token}` }
 
     await axios.put(`${API_URL}/vendors/update`, {
       business_name: updatedData.business_name,
       business_description: updatedData.business_description,
-    }, { headers })
+    })
 
     await axios.put(`${API_URL}/vendors/social-links`, {
       whatsapp:      updatedData.whatsapp,
@@ -333,7 +320,7 @@ const handleShopSave = async (updatedData) => {
       other_1_label: updatedData.other_1_label,
       other_2_url:   updatedData.other_2_url,
       other_2_label: updatedData.other_2_label,
-    }, { headers })
+    })
 
     setShop((prev) => ({ ...prev, ...updatedData }))
     clearShopCache(propVendorId || slug);

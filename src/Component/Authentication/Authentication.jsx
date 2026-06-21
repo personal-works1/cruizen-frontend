@@ -66,7 +66,7 @@ function Auth() {
           Identifier: form.Identifier?.trim(),
           password:   form.password?.trim(),
         })
-        login(response.data.token, response.data.refreshToken, response.data.user)
+        login( response.data.user)
         navigate("/")
       } else {
         const response = await axios.post(`${API_URL}/auth/register`, {
@@ -79,7 +79,7 @@ function Auth() {
           level:           form.level?.trim(),
           role:            "user",
         })
-        login(response.data.token, response.data.refreshToken, response.data.user)
+        login(response.data.user)
         navigate("/")
       }
     } catch (error) {

@@ -40,7 +40,6 @@ function RankBadge({ rank }) {
 }
 
 export default function Leaderboard() {
-  const { getValidToken }   = useAuth()
   const navigate            = useNavigate()
   const [data, setData]     = useState(null)
   const [loading, setLoading] = useState(true)
@@ -49,10 +48,8 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/leaderboard/current`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await axios.get(`${API_URL}/leaderboard/current`
+        )
         setData(res.data)
       } catch (err) {
         console.error(err)

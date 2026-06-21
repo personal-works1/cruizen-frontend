@@ -157,7 +157,7 @@ function Home() {
   const bottomRef = useRef(null)
 
   const { activeIdentity }                  = useMode()
-  const { user: me, getValidToken, loading: authLoading } = useAuth()
+  const { user: me, loading: authLoading } = useAuth()
   const navigate                            = useNavigate()
 
   const POSTS_PER_PAGE = 10 // how many posts to load at a time
@@ -192,11 +192,9 @@ function Home() {
     else setLoadingMore(true)
 
     try {
-      let token = null
-      try { token = await getValidToken() } catch {}
+
 
       const res = await axios.get(`${API_URL}/posts/feed`, {
-        headers: { Authorization: `Bearer ${token}` },
         params: {
           page:  pageNum,
           limit: POSTS_PER_PAGE,
@@ -227,7 +225,7 @@ function Home() {
       setFeedLoading(false)
       setLoadingMore(false)
     }
-  }, [authLoading, getValidToken])
+  }, [authLoading])
 
 
   // ── INITIAL FEED LOAD ─────────────────────────────────────────────────────
@@ -271,14 +269,10 @@ useEffect(() => {
     if (authLoading || !me) return
     const fetchRecommended = async () => {
       try {
-        const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/products/recommended`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await axios.get(`${API_URL}/products/recommended`
+        )
         if (res.data.products.length === 0) {
-          const fallback = await axios.get(`${API_URL}/products`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          const fallback = await axios.get(`${API_URL}/products`)
           const allProducts = Object.values(fallback.data.products).flat().slice(0, 6)
           setRecommended(allProducts)
         } else {
@@ -297,10 +291,8 @@ useEffect(() => {
     if (authLoading) return
     const fetchTrending = async () => {
       try {
-        const token = await getValidToken()
-        const res = await axios.get(`${API_URL}/posts/trending`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await axios.get(`${API_URL}/posts/trending`
+        )
         setTrending(res.data)
       } catch (err) {
         console.error(err)
@@ -325,12 +317,9 @@ useEffect(() => {
     if (authLoading) return
     const fetchSidebar = async () => {
       try {
-        const token = await getValidToken()
-        if (!token) return
-        const authHeader = { Authorization: `Bearer ${token}` }
         const [vendorsRes, accountsRes] = await Promise.all([
-          axios.get(`${API_URL}/users/top-vendors`,  { headers: authHeader }),
-          axios.get(`${API_URL}/users/top-accounts`, { headers: authHeader })
+          axios.get(`${API_URL}/users/top-vendors`),
+          axios.get(`${API_URL}/users/top-accounts`)
         ])
         setTopVendors(vendorsRes.data.vendors)
         setTopAccounts(accountsRes.data.accounts)
@@ -372,43 +361,55 @@ useEffect(() => {
 
   // ── LIKE TOGGLE ───────────────────────────────────────────────────────────
   const handleLikeToggle = async (post) => {
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
-    const liked = post.liked_by_me
-    try {
-      if (liked) {
-        await axios.delete(`${API_URL}/posts/${post.id}/like`, { headers: authHeader })
-      } else {
-        await axios.post(`${API_URL}/posts/${post.id}/like`, {}, { headers: authHeader })
-      }
-      setPosts(prev => prev.map(p =>
-        p.id === post.id
-          ? { ...p, liked_by_me: !liked, likes_count: liked ? Number(p.likes_count) - 1 : Number(p.likes_count) + 1 }
-          : p
-      ))
-    } catch (err) {
-      console.error("Like error:", err)
+  const liked = post.liked_by_me
+
+  // optimistic update first — UI responds instantly
+  setPosts(prev => prev.map(p =>
+    p.id === post.id
+      ? { ...p, liked_by_me: !liked, likes_count: liked ? Number(p.likes_count) - 1 : Number(p.likes_count) + 1 }
+      : p
+  ))
+
+  try {
+    if (liked) {
+      await axios.delete(`${API_URL}/posts/${post.id}/like`)
+    } else {
+      await axios.post(`${API_URL}/posts/${post.id}/like`)
     }
+  } catch (err) {
+    // rollback on failure
+    setPosts(prev => prev.map(p =>
+      p.id === post.id
+        ? { ...p, liked_by_me: liked, likes_count: liked ? Number(p.likes_count) + 1 : Number(p.likes_count) - 1 }
+        : p
+    ))
+    console.error("Like error:", err)
   }
+}
 
 
   // ── REPOST TOGGLE ─────────────────────────────────────────────────────────
   const handleRepostToggle = async (post) => {
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
     const reposted = post.reposted_by_me
+
+    setPosts(prev => prev.map(p =>
+        p.id === post.id
+          ? { ...p, reposted_by_me: !reposted, reposts_count: reposted ? Number(p.reposts_count) - 1 : Number(p.reposts_count) + 1 }
+          : p
+      ))
     try {
       if (reposted) {
-        await axios.delete(`${API_URL}/posts/${post.id}/repost`, { headers: authHeader })
+        await axios.delete(`${API_URL}/posts/${post.id}/repost`)
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/repost`, {}, { headers: authHeader })
+        await axios.post(`${API_URL}/posts/${post.id}/repost`)
       }
+      
+    } catch (err) {
       setPosts(prev => prev.map(p =>
         p.id === post.id
           ? { ...p, reposted_by_me: !reposted, reposts_count: reposted ? Number(p.reposts_count) - 1 : Number(p.reposts_count) + 1 }
           : p
       ))
-    } catch (err) {
       console.error("Repost error:", err)
     }
   }
@@ -416,21 +417,25 @@ useEffect(() => {
 
   // ── BOOKMARK TOGGLE ───────────────────────────────────────────────────────
   const handleBookmarkToggle = async (post) => {
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
     const bookmarked = post.bookmarked_by_me
+    setPosts(prev => prev.map(p =>
+        p.id === post.id
+          ? { ...p, bookmarked_by_me: !bookmarked, bookmarks_count: bookmarked ? Number(p.bookmarks_count) - 1 : Number(p.bookmarks_count) + 1 }
+          : p
+      ))
     try {
       if (bookmarked) {
-        await axios.delete(`${API_URL}/posts/${post.id}/bookmark`, { headers: authHeader })
+        await axios.delete(`${API_URL}/posts/${post.id}/bookmark`)
       } else {
-        await axios.post(`${API_URL}/posts/${post.id}/bookmark`, {}, { headers: authHeader })
+        await axios.post(`${API_URL}/posts/${post.id}/bookmark`)
       }
+      
+    } catch (err) {
       setPosts(prev => prev.map(p =>
         p.id === post.id
           ? { ...p, bookmarked_by_me: !bookmarked, bookmarks_count: bookmarked ? Number(p.bookmarks_count) - 1 : Number(p.bookmarks_count) + 1 }
           : p
       ))
-    } catch (err) {
       console.error("Bookmark error:", err)
     }
   }
@@ -441,12 +446,11 @@ useEffect(() => {
     const vendor = topVendors.find(v => v.id === targetId)
     if (!vendor) return
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
+      
       if (vendor.is_following) {
-        await axios.delete(`${API_URL}/vendors/${vendor.vendor_profile_id}/follow`, { headers })
+        await axios.delete(`${API_URL}/vendors/${vendor.vendor_profile_id}/follow`)
       } else {
-        await axios.post(`${API_URL}/vendors/${vendor.vendor_profile_id}/follow`, {}, { headers })
+        await axios.post(`${API_URL}/vendors/${vendor.vendor_profile_id}/follow`, {})
       }
       setTopVendors(prev => prev.map(v =>
         v.id === targetId ? { ...v, is_following: !v.is_following } : v
@@ -457,15 +461,13 @@ useEffect(() => {
 
   // ── ACCOUNT FOLLOW ────────────────────────────────────────────────────────
   const handleAccountFollow = async (targetId) => {
-    const token = await getValidToken()
-    const authHeader = { Authorization: `Bearer ${token}` }
     const account = topAccounts.find(a => a.id === targetId)
     if (!account) return
     try {
       if (account.is_following) {
-        await axios.delete(`${API_URL}/profile/${account.username}/follow`, { headers: authHeader })
+        await axios.delete(`${API_URL}/profile/${account.username}/follow`)
       } else {
-        await axios.post(`${API_URL}/profile/${account.username}/follow`, {}, { headers: authHeader })
+        await axios.post(`${API_URL}/profile/${account.username}/follow`)
       }
       setTopAccounts(prev => prev.map(a =>
         a.id === targetId ? { ...a, is_following: !a.is_following } : a

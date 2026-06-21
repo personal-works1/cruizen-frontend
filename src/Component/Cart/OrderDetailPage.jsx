@@ -44,8 +44,7 @@ function StarPicker({ value, onChange }) {
 }
 
 // ── Review Section ────────────────────────────────────────────────────────────
-function ReviewSection({ order, user, token, onReviewed }) {
-  const authHeader = { Authorization: `Bearer ${token}` }
+function ReviewSection({ order, user, onReviewed }) {
   const [canReview,      setCanReview]      = useState(false)
   const [alreadyReviewed, setAlreadyReviewed] = useState(false)
   const [reviewStatus,   setReviewStatus]   = useState(null)
@@ -64,7 +63,6 @@ function ReviewSection({ order, user, token, onReviewed }) {
       try {
         const res = await axios.get(
           `${API_URL}/reviews/can-review/${order.id}`,
-          { headers: authHeader }
         )
         setCanReview(res.data.can_review)
         setAlreadyReviewed(res.data.already_reviewed)
@@ -90,7 +88,7 @@ function ReviewSection({ order, user, token, onReviewed }) {
         order_id: order.id,
         rating,
         review_text: reviewText || null
-      }, { headers: authHeader })
+      })
       setSuccess(true)
       onReviewed()
     } catch (err) {
@@ -212,8 +210,7 @@ function ReviewSection({ order, user, token, onReviewed }) {
 export default function OrderDetailPage() {
   const { id }          = useParams()
   const navigate        = useNavigate()
-  const { token, user } = useAuth()
-  const authHeader      = { Authorization: `Bearer ${token}` }
+  const { user } = useAuth()
 
   const [order,   setOrder]   = useState(null)
   const [loading, setLoading] = useState(true)
@@ -223,7 +220,7 @@ export default function OrderDetailPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await axios.get(`${API_URL}/orders/${id}`, { headers: authHeader })
+        const res = await axios.get(`${API_URL}/orders/${id}`)
         setOrder(res.data)
       } catch (err) {
         setError('Order not found.')
@@ -237,7 +234,7 @@ export default function OrderDetailPage() {
   const handleMarkDelivered = async () => {
     setMarking(true)
     try {
-      const res = await axios.put(`${API_URL}/orders/${id}/deliver`, {}, { headers: authHeader })
+      const res = await axios.put(`${API_URL}/orders/${id}/deliver`)
       setOrder(res.data.order)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to mark delivered')
@@ -249,7 +246,7 @@ export default function OrderDetailPage() {
   // refresh order after review submitted
   const handleReviewed = async () => {
     try {
-      const res = await axios.get(`${API_URL}/orders/${id}`, { headers: authHeader })
+      const res = await axios.get(`${API_URL}/orders/${id}`)
       setOrder(res.data)
     } catch (err) { console.error(err) }
   }
@@ -396,7 +393,6 @@ export default function OrderDetailPage() {
       <ReviewSection
         order={order}
         user={user}
-        token={token}
         onReviewed={handleReviewed}
       />
 

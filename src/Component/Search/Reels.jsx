@@ -194,7 +194,6 @@ const goToProfile = () => {
 function Reels() {
   const { postId }        = useParams()
   const navigate          = useNavigate()
-  const { getValidToken } = useAuth()
 
   const [videos,      setVideos]      = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
@@ -211,10 +210,8 @@ function Reels() {
   useEffect(() => {
     const load = async () => {
       try {
-        const token = await getValidToken()
         const res = await axios.get(
           `${API_URL}/search/reels/${postId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
         )
         setVideos(res.data.videos)
       } catch (err) {
@@ -261,11 +258,9 @@ function Reels() {
   const handleLike = async (video) => {
     const liked = video.liked_by_me
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
       liked
-        ? await axios.delete(`${API_URL}/posts/${video.id}/like`, { headers })
-        : await axios.post(`${API_URL}/posts/${video.id}/like`, {}, { headers })
+        ? await axios.delete(`${API_URL}/posts/${video.id}/like`)
+        : await axios.post(`${API_URL}/posts/${video.id}/like`, {})
       setVideos(prev => prev.map(v =>
         v.id === video.id
           ? { ...v, liked_by_me: !liked, likes_count: liked ? v.likes_count - 1 : v.likes_count + 1 }
@@ -277,11 +272,9 @@ function Reels() {
   const handleRepost = async (video) => {
     const reposted = video.reposted_by_me
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
       reposted
-        ? await axios.delete(`${API_URL}/posts/${video.id}/repost`, { headers })
-        : await axios.post(`${API_URL}/posts/${video.id}/repost`, {}, { headers })
+        ? await axios.delete(`${API_URL}/posts/${video.id}/repost`)
+        : await axios.post(`${API_URL}/posts/${video.id}/repost`)
       setVideos(prev => prev.map(v =>
         v.id === video.id
           ? { ...v, reposted_by_me: !reposted, reposts_count: reposted ? v.reposts_count - 1 : v.reposts_count + 1 }
@@ -293,11 +286,9 @@ function Reels() {
   const handleBookmark = async (video) => {
     const bookmarked = video.bookmarked_by_me
     try {
-      const token = await getValidToken()
-      const headers = { Authorization: `Bearer ${token}` }
       bookmarked
-        ? await axios.delete(`${API_URL}/posts/${video.id}/bookmark`, { headers })
-        : await axios.post(`${API_URL}/posts/${video.id}/bookmark`, {}, { headers })
+        ? await axios.delete(`${API_URL}/posts/${video.id}/bookmark`)
+        : await axios.post(`${API_URL}/posts/${video.id}/bookmark`)
       setVideos(prev => prev.map(v =>
         v.id === video.id
           ? { ...v, bookmarked_by_me: !bookmarked, bookmarks_count: bookmarked ? v.bookmarks_count - 1 : v.bookmarks_count + 1 }
@@ -308,11 +299,9 @@ function Reels() {
 
   const handleFollow = async (video) => {
     try {
-      const token = await getValidToken()
       await axios.post(
         `${API_URL}/profile/${video.username}/follow`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
       )
       setVideos(prev => prev.map(v =>
         v.user_id === video.user_id ? { ...v, is_following: true } : v

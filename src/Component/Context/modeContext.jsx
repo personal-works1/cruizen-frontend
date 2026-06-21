@@ -25,12 +25,8 @@ useEffect(() => {
     // console.log("USER ROLE:", user.role) // ← is it actually "both"?
 
     if (user.role === "both") {
-      const token = localStorage.getItem("token")
-      // console.log("TOKEN:", token) // ← is token there?
       
-      axios.get(`${API_URL}/vendors/mine`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      axios.get(`${API_URL}/vendors/mine`)
       .then(res => {
         //console.log("VENDOR FETCHED:", res.data.vendor) // ← is vendor coming back?
         setVendorProfile(res.data.vendor)
