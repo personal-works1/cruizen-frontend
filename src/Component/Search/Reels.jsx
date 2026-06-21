@@ -23,7 +23,7 @@ function ReelItem({ video, index, isActive, isNext, muted, onMuteToggle, onLike,
   const navigate = useNavigate()
   const { user: me } = useAuth()
   const [paused, setPaused] = useState(false)
-
+ const thumbnail = video.media_url?.replace(/\.(mp4|mov|webm)$/i, ".jpg")
   const displayName   = video.author_type === "business" ? video.business_name : video.username
 const displayAvatar = video.author_type === "business" ? video.business_avatar_url : video.avatar_url
 
@@ -71,7 +71,7 @@ const goToProfile = () => {
 
   return (
     <div className="reelItem" data-index={index}>
-      <video
+     <video
   ref={videoRef}
   src={video.media_url}
   loop
@@ -79,7 +79,8 @@ const goToProfile = () => {
   muted={muted}
   onClick={handleVideoTap}
   className="reelVideo"
-  preload={isActive || isNext ? "auto" : "none"} // ← add isNext prop
+  preload={isActive || isNext ? "auto" : "none"}
+  poster={thumbnail}
 />
 
       {paused && (

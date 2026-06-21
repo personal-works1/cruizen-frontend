@@ -129,6 +129,7 @@ function VideoThumb({ src, postId }) {
     vid.muted = !vid.muted;
     setMuted(vid.muted);
   };
+  const thumbnail = src?.replace(/\.(mp4|mov|webm)$/i, ".jpg")
 
   return (
     <div
@@ -142,7 +143,7 @@ function VideoThumb({ src, postId }) {
   loop
   playsInline
   muted={muted}
-
+  poster={thumbnail}
   style={{ width: "100%", borderRadius: "8px", display: "block", pointerEvents: "none" }}
 />
       <button
