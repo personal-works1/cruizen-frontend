@@ -27,7 +27,9 @@ function Layout() {
   const hideNav = location.pathname === "/usersignIn" ||
                 location.pathname === "/forgot-password" ||
                 location.pathname === "/verify-email" ||
-                location.pathname.startsWith("/reels")
+                location.pathname.startsWith("/product") ||
+                location.pathname.startsWith("/reels") 
+                
 
   return (
     <>

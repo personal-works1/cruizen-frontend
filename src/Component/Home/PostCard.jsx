@@ -430,10 +430,10 @@ const displayUsername = post.author_type === "business"
 
           </div>
 
-          <div className="O">
+          {/* <div className="O">
             <SendIcon style={{ color: "var(--text-primary)" }} />
             <p style={{ color: "var(--text-primary)" }}>0</p>
-          </div>
+          </div> */}
         </div>
       </div>
 

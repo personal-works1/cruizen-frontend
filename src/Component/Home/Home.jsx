@@ -484,10 +484,9 @@ const preloadMedia = (posts, currentIndex) => {
       img.src = post.media_url
     } else if (post.media_type === "video") {
       // fetch with low priority instead of link preload
-      fetch(post.media_url, { 
-        method: "GET",
-        headers: { Range: "bytes=0-500000" } // only prefetch first 500KB
-      }).catch(() => {})
+      } else if (post.media_type === "video") {
+  fetch(post.media_url, { method: "GET" }).catch(() => {})
+
     }
   })
 }
