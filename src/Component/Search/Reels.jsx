@@ -225,6 +225,21 @@ function Reels() {
     load()
   }, [postId])
 
+  // Add this after setVideos(res.data.videos)
+useEffect(() => {
+  if (!videos.length) return
+  
+  // preload next 2 reels whenever activeIndex changes
+  const nextVideos = videos.slice(activeIndex + 1, activeIndex + 3)
+  nextVideos.forEach(video => {
+    if (!video.media_url) return
+    fetch(video.media_url, {
+      method: "GET",
+      headers: { Range: "bytes=0-500000" }
+    }).catch(() => {})
+  })
+}, [activeIndex, videos])
+
   // ── IntersectionObserver — rooted to the scroll container ────────────────
   // Bug #1: threshold 0.7 means a reel must be 70 % visible before it's
   // considered "active". Only one reel can be 70 % visible at a time in a

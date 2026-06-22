@@ -160,7 +160,7 @@ function Home() {
   const { user: me, loading: authLoading } = useAuth()
   const navigate                            = useNavigate()
 
-  const POSTS_PER_PAGE = 10 // how many posts to load at a time
+  const POSTS_PER_PAGE = 3 // how many posts to load at a time
 
 
   // ── FETCH FEED ────────────────────────────────────────────────────────────
@@ -475,8 +475,22 @@ useEffect(() => {
     } catch (err) { console.error(err) }
   }
   
-
-
+const preloadMedia = (posts, currentIndex) => {
+  const nextPosts = posts.slice(currentIndex + 1, currentIndex + 4)
+  nextPosts.forEach(post => {
+    if (!post.media_url) return
+    if (post.media_type === "image") {
+      const img = new Image()
+      img.src = post.media_url
+    } else if (post.media_type === "video") {
+      // fetch with low priority instead of link preload
+      fetch(post.media_url, { 
+        method: "GET",
+        headers: { Range: "bytes=0-500000" } // only prefetch first 500KB
+      }).catch(() => {})
+    }
+  })
+}
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <>
@@ -570,7 +584,9 @@ useEffect(() => {
 
           {!feedLoading && posts
             .filter(post => post && post.id)
-            .map((post, index) => (
+            .map((post, index) => {
+               if (index === 0) preloadMedia(posts, 0)
+              return(
               <React.Fragment key={post.id}>
                 <PostCard
                   post={post}
@@ -606,7 +622,7 @@ useEffect(() => {
                   </div>
                 )}
               </React.Fragment>
-            ))
+            )})
           }
 
           {/* ── INFINITE SCROLL SENTINEL ──────────────────────────────────

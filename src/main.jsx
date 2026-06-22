@@ -22,6 +22,15 @@ createRoot(document.getElementById("root")).render(
   </AuthProvider>
 )
 
+// add at the bottom, after ReactDOM.createRoot(...)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("SW registered"))
+      .catch((err) => console.log("SW failed:", err))
+  })
+}
+
 // createRoot(document.getElementById('root')).render(
 //   <StrictMode>
 //     <App />

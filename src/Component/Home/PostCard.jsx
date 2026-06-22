@@ -144,6 +144,7 @@ function VideoThumb({ src, postId }) {
   playsInline
   muted={muted}
   poster={thumbnail}
+  preload="none"
   style={{ width: "100%", borderRadius: "8px", display: "block", pointerEvents: "none" }}
 />
       <button
@@ -383,6 +384,7 @@ const displayUsername = post.author_type === "business"
             <img
               src={post.media_url}
               alt="post"
+              loading="lazy"
               onError={(e) => { e.target.parentElement.style.display = "none"; }}
             />
           </div>
