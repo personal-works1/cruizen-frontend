@@ -1,4 +1,4 @@
-const CACHE_NAME = "cruizen-v1"
+const CACHE_NAME = "cruizen-v2"
 
 // files to cache on install
 const STATIC_ASSETS = [
@@ -43,7 +43,7 @@ self.addEventListener("fetch", (event) => {
 
   // skip non-GET and API requests — always fresh from network
   if (event.request.method !== "GET") return
-  if (url.pathname.startsWith("/api") || url.hostname.includes("render") || url.hostname.includes("neon")) return
+  if (url.pathname.startsWith("/api") || url.hostname.includes("render") || url.hostname.includes("neon") || url.hostname.includes("cloudinary.com") ) return
 
   // network-first for HTML (always get latest app shell)
   if (event.request.headers.get("accept")?.includes("text/html")) {
