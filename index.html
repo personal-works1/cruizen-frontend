@@ -5,15 +5,63 @@
     <link rel="icon" type="image/png" href="/Cruizen.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#61027b" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="Cruizen" />
-<link rel="apple-touch-icon" href="/Cruizen.png" />
+    <meta name="theme-color" content="#c060e0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Cruizen" />
+    <link rel="apple-touch-icon" href="/Cruizen.png" />
     <title>Cruizen</title>
+
+    <!-- ── prevent flash of wrong background ─────────────────────── -->
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.background = '#c060e0';
+      })();
+    </script>
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body, #root {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+      #splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #c060e0;
+        z-index: 9999;
+        transition: opacity 0.4s ease;
+      }
+      #splash img {
+        width: 180px;
+        height: 180px;
+        object-fit: contain;
+        border-radius: 32px;
+        animation: splashPulse 1.5s ease-in-out infinite;
+      }
+      #splash.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      @keyframes splashPulse {
+        0%, 100% { transform: scale(1);    opacity: 1; }
+        50%       { transform: scale(1.06); opacity: 0.9; }
+      }
+    </style>
   </head>
   <body>
+    <!-- ── splash: renders before React loads, no flash ── -->
+    <div id="splash">
+      <img src="/Cruizen.png" alt="Cruizen" />
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -20,25 +20,31 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
-  useEffect(() => {
-    const init = async () => {
+useEffect(() => {
+  const init = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/auth/me`)
+      setUser(res.data.user)
+    } catch {
       try {
+        await axios.post(`${API_URL}/auth/refresh`)
         const res = await axios.get(`${API_URL}/auth/me`)
         setUser(res.data.user)
       } catch {
-        try {
-          await axios.post(`${API_URL}/auth/refresh`)
-          const res = await axios.get(`${API_URL}/auth/me`)
-          setUser(res.data.user)
-        } catch {
-          setUser(null)
-        }
-      } finally {
-        setLoading(false)
+        setUser(null)
+      }
+    } finally {
+      setLoading(false)
+      // ── dismiss splash screen once auth check completes ──────────
+      const splash = document.getElementById("splash")
+      if (splash) {
+        splash.classList.add("hidden")
+        setTimeout(() => splash.remove(), 400)
       }
     }
-    init()
-  }, [])
+  }
+  init()
+}, [])
 
   const login = (user) => {
     if (!user) {
